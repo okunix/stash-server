@@ -35,6 +35,7 @@ func InitSQLite(ctx context.Context, path string, migrations fs.FS) error {
 	}
 	pragmaStmt := `
 		PRAGMA foreign_keys = 1;
+		PRAGMA journal_mode = WAL;
 	`
 	_, err = sqliteConn.ExecContext(ctx, pragmaStmt)
 	if err != nil {
