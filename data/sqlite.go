@@ -8,8 +8,6 @@ import (
 
 	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
-
-	"gitlab.com/stash-password-manager/stash-server/config"
 )
 
 var sqliteConn *sql.DB
@@ -19,9 +17,8 @@ func SQLite() *sql.DB {
 }
 
 func InitSQLite(ctx context.Context, path string, migrations fs.FS) error {
-	conf := config.Conf()
 	var err error
-	sqliteConn, err = sql.Open("sqlite", conf.SQLiteConfig.DbPath)
+	sqliteConn, err = sql.Open("sqlite", path)
 	if err != nil {
 		return err
 	}
