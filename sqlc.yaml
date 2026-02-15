@@ -6,9 +6,26 @@ sql:
     gen:
       go:
         package: "sqlc"
-        emit_prepared_queries: true
         out: "sqlc"
+        emit_result_struct_pointers: true
+        emit_prepared_queries: true
+        emit_pointers_for_null_types: true
+        rename:
+          list_access_log_row: "AccessLog"
         overrides:
+          - column: "users.id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "access_log.id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "stashes.id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+
           - column: "users.created_at"
             go_type: "time.Time"
           - column: "stash_member.created_at"
@@ -18,4 +35,5 @@ sql:
           - column: "stashes.created_at"
             go_type: "time.Time"
           - column: "users.expired_at"
+            nullable: true
             go_type: "time.Time"

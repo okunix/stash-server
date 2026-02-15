@@ -3,11 +3,13 @@ package data
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"io/fs"
 	"log/slog"
 
+	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
-	_ "modernc.org/sqlite"
+	"modernc.org/sqlite"
 )
 
 var sqliteConn *sql.DB
@@ -16,7 +18,13 @@ func SQLite() *sql.DB {
 	return sqliteConn
 }
 
+func generate_uuid(ctx *sqlite.FunctionContext, args []driver.Value) (driver.Value, error) {
+	return driver.String.ConvertValue(uuid.NewString())
+}
+
 func InitSQLite(ctx context.Context, path string, migrations fs.FS) error {
+	sqlite.MustRegisterScalarFunction("generate_uuid", 0, generate_uuid)
+
 	var err error
 	sqliteConn, err = sql.Open("sqlite", path)
 	if err != nil {
