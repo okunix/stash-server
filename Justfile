@@ -51,5 +51,6 @@ run config="config.yaml": build
 
 docker_image_name := "stash-server"
 
+# build docker image
 docker-build tag="latest":
     docker build -t {{docker_image_name}}:{{tag}} .
