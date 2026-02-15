@@ -1,0 +1,21 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries: "queries"
+    schema: "migrations"
+    gen:
+      go:
+        package: "sqlc"
+        emit_prepared_queries: true
+        out: "sqlc"
+        overrides:
+          - column: "users.created_at"
+            go_type: "time.Time"
+          - column: "stash_member.created_at"
+            go_type: "time.Time"
+          - column: "access_log.created_at"
+            go_type: "time.Time"
+          - column: "stashes.created_at"
+            go_type: "time.Time"
+          - column: "users.expired_at"
+            go_type: "time.Time"
