@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users(
 CREATE TABLE IF NOT EXISTS stashes (
     id TEXT PRIMARY KEY DEFAULT (generate_uuid()),
     name TEXT NOT NULL UNIQUE,
+    description TEXT NULL,
     maintainer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
     master_key_salt TEXT NOT NULL UNIQUE,
