@@ -68,4 +68,6 @@ func Run(configFilePath string) {
 		!errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
+
+	data.SQLite().Close()
 }
