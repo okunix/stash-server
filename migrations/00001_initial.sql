@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS stashes (
     maintainer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
     master_key_salt TEXT NOT NULL UNIQUE,
-    content BLOB, -- Never decrypt, store unlocked state in memory and commit only encrypted state on CREATE, UPDATE and DELETE secrets.
+    encrypted_data BLOB,
+    nonce TEXT, -- for AES-GCM cipher
     created_at TEXT NOT NULL DEFAULT (datetime()) -- iso8601
 );
 
@@ -33,7 +34,7 @@ CREATE TABLE IF NOT EXISTS access_log (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE NO ACTION,
     stash_id TEXT NOT NULL REFERENCES stashes(id) ON DELETE NO ACTION,
     secret_name TEXT NOT NULL,
-    action TEXT NOT NULL CHECK (action IN ('c', 'r', 'u', 'd')),
+    action TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime()) -- iso8601
 );
 -- +goose StatementEnd
