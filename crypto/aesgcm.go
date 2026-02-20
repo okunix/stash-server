@@ -7,13 +7,17 @@ import (
 )
 
 type Cipher interface {
-	Encrypt(key, nonce, data []byte) ([]byte, error)
-	Decrypt(key, nonce, data []byte) ([]byte, error)
+	Encrypt(key, plaintext []byte) ([]byte, error)
+	Decrypt(key, ciphertext []byte) ([]byte, error)
 }
 
 type AESGCM struct{}
 
-func Encrypt(data string) ([]byte, error) {
+func NewAESGCM() Cipher {
+	return AESGCM{}
+}
+
+func (st AESGCM) Encrypt(key, plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -22,15 +26,24 @@ func Encrypt(data string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	nonce := make([]byte, aesgcm.NonceSize())
+	if _, err = rand.Read(nonce); err != nil {
+		return nil, err
+	}
+	ciphertext := aesgcm.Seal(nil, nonce, plaintext, nil)
+	return append(nonce, ciphertext...), nil
+}
+
+func (st AESGCM) Decrypt(key, ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	ciphertext := aesgcm.Seal(nil, nonce, []byte(data), nil)
-	return ciphertext, nil
-}
-
-func RandomBytes(size int) ([]byte, error) {
-	nonce := make([]byte, size)
-	_, err := rand.Read(nonce)
-	return nonce, err
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonce := ciphertext[:aesgcm.NonceSize()]
+	ciphertext = ciphertext[aesgcm.NonceSize():]
+	return aesgcm.Open(nil, nonce, ciphertext, nil)
 }
