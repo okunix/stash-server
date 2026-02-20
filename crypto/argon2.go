@@ -17,10 +17,15 @@ type Key interface {
 	Bytes() []byte
 }
 
-type argon2IDKey []byte
+type argon2IDKey struct {
+	Argon2ID
+	key []byte
+}
 
-func (a argon2IDKey) String() string { return hex.EncodeToString(a) }
-func (a argon2IDKey) Bytes() []byte  { return a }
+func (a argon2IDKey) String() string {
+	return hex.EncodeToString(a.key)
+}
+func (a argon2IDKey) Bytes() []byte { return a.key }
 
 type Argon2ID struct {
 	time    uint32
@@ -79,7 +84,10 @@ func NewArgon2ID(opts ...Argon2IDOption) (KDF, error) {
 }
 
 func (s *Argon2ID) DeriveKey(password, salt []byte) (Key, error) {
-	return argon2IDKey(argon2.IDKey(password, salt, s.time, s.memory, s.threads, s.keyLen)), nil
+	return argon2IDKey{
+		Argon2ID: *s,
+		key:      argon2.IDKey(password, salt, s.time, s.memory, s.threads, s.keyLen),
+	}, nil
 }
 
 func (s *Argon2ID) Compare(a, b []byte) bool {
