@@ -39,11 +39,11 @@ type UpdateUserParams struct {
 }
 
 type ListUsersParams struct {
-	limit  int64
-	offset int64
+	limit  uint
+	offset uint
 }
 
-type UserRepository interface {
+type Repository interface {
 	ListUsers(ctx context.Context, params ListUsersParams) ([]*User, int64, error)
 	GetUser(ctx context.Context, params GetUserParams) (*User, error)
 	GetUserByUsername(ctx context.Context, params GetUserByUsernameParams) (*User, error)

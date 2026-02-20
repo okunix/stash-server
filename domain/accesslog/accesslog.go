@@ -20,11 +20,11 @@ type AccessLog struct {
 
 type ListLogsParams struct {
 	StashID uuid.UUID
-	Limit   int64
-	Offset  int64
+	Limit   uint
+	Offset  uint
 }
 
-type FlushLogsParams struct {
+type DeleteLogsParams struct {
 	Timestamp *time.Time
 }
 
@@ -35,8 +35,8 @@ type CreateLogEntryParams struct {
 	Action     string
 }
 
-type AccessLogRepository interface {
+type Repository interface {
 	ListLogs(ctx context.Context, params ListLogsParams) ([]*AccessLog, error)
-	DeleteLogs(ctx context.Context, params FlushLogsParams) (int64, error)
+	DeleteLogs(ctx context.Context, params DeleteLogsParams) (int64, error)
 	CreateLogEntry(ctx context.Context, params CreateLogEntryParams) error
 }
