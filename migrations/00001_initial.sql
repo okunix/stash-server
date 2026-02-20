@@ -16,9 +16,8 @@ CREATE TABLE IF NOT EXISTS stashes (
     description TEXT NULL,
     maintainer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
-    master_key_salt TEXT NOT NULL UNIQUE,
-    encrypted_data BLOB,
-    nonce TEXT, -- for AES-GCM cipher
+    --master_key_salt TEXT NOT NULL UNIQUE,
+    encrypted_data TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime()) -- iso8601
 );
 

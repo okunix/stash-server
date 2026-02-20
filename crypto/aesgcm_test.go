@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"encoding/base64"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestAESGCM(t *testing.T) {
 	ciphertext, err := cipher.Encrypt(key.Bytes(), plaintext)
 	assert.Nil(t, err)
 
-	t.Log(string(ciphertext))
+	t.Log(base64.RawStdEncoding.EncodeToString(ciphertext))
 
 	decoded, err := cipher.Decrypt(key.Bytes(), ciphertext)
 	assert.Nil(t, err)
