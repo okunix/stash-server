@@ -11,13 +11,13 @@ type Cipher interface {
 	Decrypt(key, ciphertext []byte) ([]byte, error)
 }
 
-type AESGCM struct{}
+type aesgcm struct{}
 
-func NewAESGCM() Cipher {
-	return AESGCM{}
+func AESGCM() Cipher {
+	return aesgcm{}
 }
 
-func (st AESGCM) Encrypt(key, plaintext []byte) ([]byte, error) {
+func (st aesgcm) Encrypt(key, plaintext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (st AESGCM) Encrypt(key, plaintext []byte) ([]byte, error) {
 	return append(nonce, ciphertext...), nil
 }
 
-func (st AESGCM) Decrypt(key, ciphertext []byte) ([]byte, error) {
+func (st aesgcm) Decrypt(key, ciphertext []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err

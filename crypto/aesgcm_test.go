@@ -17,7 +17,7 @@ func TestAESGCM(t *testing.T) {
 
 	plaintext := []byte("secret message :)")
 
-	cipher := NewAESGCM()
+	cipher := AESGCM()
 	ciphertext, err := cipher.Encrypt(key.Bytes(), plaintext)
 	assert.Nil(t, err)
 
