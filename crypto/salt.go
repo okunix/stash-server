@@ -2,8 +2,8 @@ package crypto
 
 import "crypto/rand"
 
-func RandomBytes(size int) ([]byte, error) {
+func RandomBytes(size int) []byte {
 	nonce := make([]byte, size)
-	_, err := rand.Read(nonce)
-	return nonce, err
+	rand.Read(nonce)
+	return nonce
 }

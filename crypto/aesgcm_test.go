@@ -8,7 +8,7 @@ import (
 )
 
 func TestAESGCM(t *testing.T) {
-	salt, _ := RandomBytes(32)
+	salt := RandomBytes(32)
 	kdf, err := NewArgon2ID(salt)
 	assert.Nil(t, err)
 
