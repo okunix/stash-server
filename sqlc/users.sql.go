@@ -13,24 +13,22 @@ import (
 )
 
 const addUser = `-- name: AddUser :one
-INSERT INTO users(username, password_hash, password_salt)
-VALUES (?, ?, ?) RETURNING id, username, password_hash, password_salt, locked, expired_at, created_at
+INSERT INTO users(username, password_hash)
+VALUES (?, ?) RETURNING id, username, password_hash, locked, expired_at, created_at
 `
 
 type AddUserParams struct {
 	Username     string
 	PasswordHash string
-	PasswordSalt string
 }
 
 func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (*User, error) {
-	row := q.queryRow(ctx, q.addUserStmt, addUser, arg.Username, arg.PasswordHash, arg.PasswordSalt)
+	row := q.queryRow(ctx, q.addUserStmt, addUser, arg.Username, arg.PasswordHash)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
-		&i.PasswordSalt,
 		&i.Locked,
 		&i.ExpiredAt,
 		&i.CreatedAt,
@@ -51,7 +49,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) (int64, error) {
 }
 
 const getUserByCredentials = `-- name: GetUserByCredentials :one
-SELECT id, username, password_hash, password_salt, locked, expired_at, created_at FROM users WHERE username = ? AND password_hash = ?
+SELECT id, username, password_hash, locked, expired_at, created_at FROM users WHERE username = ? AND password_hash = ?
 `
 
 type GetUserByCredentialsParams struct {
@@ -66,7 +64,6 @@ func (q *Queries) GetUserByCredentials(ctx context.Context, arg GetUserByCredent
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
-		&i.PasswordSalt,
 		&i.Locked,
 		&i.ExpiredAt,
 		&i.CreatedAt,
@@ -75,7 +72,7 @@ func (q *Queries) GetUserByCredentials(ctx context.Context, arg GetUserByCredent
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, username, password_hash, password_salt, locked, expired_at, created_at FROM users WHERE id = ?
+SELECT id, username, password_hash, locked, expired_at, created_at FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (*User, error) {
@@ -85,7 +82,6 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (*User, error) 
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
-		&i.PasswordSalt,
 		&i.Locked,
 		&i.ExpiredAt,
 		&i.CreatedAt,
@@ -94,7 +90,7 @@ func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (*User, error) 
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, password_hash, password_salt, locked, expired_at, created_at FROM users WHERE username = ?
+SELECT id, username, password_hash, locked, expired_at, created_at FROM users WHERE username = ?
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User, error) {
@@ -104,7 +100,6 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User
 		&i.ID,
 		&i.Username,
 		&i.PasswordHash,
-		&i.PasswordSalt,
 		&i.Locked,
 		&i.ExpiredAt,
 		&i.CreatedAt,
@@ -112,12 +107,28 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User
 	return &i, err
 }
 
-const listUsers = `-- name: ListUsers :many
-SELECT id, username, password_hash, password_salt, locked, expired_at, created_at FROM users ORDER BY username
+const getUserCount = `-- name: GetUserCount :one
+SELECT COUNT(*) FROM users ORDER BY username
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]*User, error) {
-	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
+func (q *Queries) GetUserCount(ctx context.Context) (int64, error) {
+	row := q.queryRow(ctx, q.getUserCountStmt, getUserCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, username, password_hash, locked, expired_at, created_at FROM users ORDER BY username LIMIT ? OFFSET ?
+`
+
+type ListUsersParams struct {
+	Limit  int64
+	Offset int64
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]*User, error) {
+	rows, err := q.query(ctx, q.listUsersStmt, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +140,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]*User, error) {
 			&i.ID,
 			&i.Username,
 			&i.PasswordHash,
-			&i.PasswordSalt,
 			&i.Locked,
 			&i.ExpiredAt,
 			&i.CreatedAt,
@@ -147,30 +157,32 @@ func (q *Queries) ListUsers(ctx context.Context) ([]*User, error) {
 	return items, nil
 }
 
-const updateUser = `-- name: UpdateUser :execrows
-UPDATE users SET username = ?, password_hash = ?, password_salt = ?, locked = ?, expired_at = ? WHERE id = ?
+const updateUser = `-- name: UpdateUser :one
+UPDATE users SET password_hash = ?, locked = ?, expired_at = ? WHERE id = ? RETURNING id, username, password_hash, locked, expired_at, created_at
 `
 
 type UpdateUserParams struct {
-	Username     string
 	PasswordHash string
-	PasswordSalt string
 	Locked       int64
 	ExpiredAt    time.Time
 	ID           uuid.UUID
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (int64, error) {
-	result, err := q.exec(ctx, q.updateUserStmt, updateUser,
-		arg.Username,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error) {
+	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
 		arg.PasswordHash,
-		arg.PasswordSalt,
 		arg.Locked,
 		arg.ExpiredAt,
 		arg.ID,
 	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.PasswordHash,
+		&i.Locked,
+		&i.ExpiredAt,
+		&i.CreatedAt,
+	)
+	return &i, err
 }

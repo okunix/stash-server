@@ -51,6 +51,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByUsernameStmt, err = db.PrepareContext(ctx, getUserByUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByUsername: %w", err)
 	}
+	if q.getUserCountStmt, err = db.PrepareContext(ctx, getUserCount); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserCount: %w", err)
+	}
 	if q.listAccessLogStmt, err = db.PrepareContext(ctx, listAccessLog); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAccessLog: %w", err)
 	}
@@ -117,6 +120,11 @@ func (q *Queries) Close() error {
 	if q.getUserByUsernameStmt != nil {
 		if cerr := q.getUserByUsernameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByUsernameStmt: %w", cerr)
+		}
+	}
+	if q.getUserCountStmt != nil {
+		if cerr := q.getUserCountStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserCountStmt: %w", cerr)
 		}
 	}
 	if q.listAccessLogStmt != nil {
@@ -197,6 +205,7 @@ type Queries struct {
 	getUserByCredentialsStmt *sql.Stmt
 	getUserByIdStmt          *sql.Stmt
 	getUserByUsernameStmt    *sql.Stmt
+	getUserCountStmt         *sql.Stmt
 	listAccessLogStmt        *sql.Stmt
 	listStashesStmt          *sql.Stmt
 	listUsersStmt            *sql.Stmt
@@ -218,6 +227,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByCredentialsStmt: q.getUserByCredentialsStmt,
 		getUserByIdStmt:          q.getUserByIdStmt,
 		getUserByUsernameStmt:    q.getUserByUsernameStmt,
+		getUserCountStmt:         q.getUserCountStmt,
 		listAccessLogStmt:        q.listAccessLogStmt,
 		listStashesStmt:          q.listStashesStmt,
 		listUsersStmt:            q.listUsersStmt,

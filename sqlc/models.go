@@ -39,7 +39,6 @@ type User struct {
 	ID           uuid.UUID
 	Username     string
 	PasswordHash string
-	PasswordSalt string
 	Locked       int64
 	ExpiredAt    time.Time
 	CreatedAt    time.Time

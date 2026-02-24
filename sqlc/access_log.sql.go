@@ -36,7 +36,7 @@ func (q *Queries) AddEntry(ctx context.Context, arg AddEntryParams) (uuid.UUID, 
 }
 
 const listAccessLog = `-- name: ListAccessLog :many
-SELECT u.id, u.username, u.password_hash, u.password_salt, u.locked, u.expired_at, u.created_at, s.id, s.name, s.description, s.maintainer_id, s.master_key_hash, s.encrypted_data, s.created_at, a.secret_name, a.action, a.created_at FROM access_log a INNER JOIN users u ON u.id = user_id INNER JOIN stashes s ON s.id = stash_id ORDER BY a.created_at DESC LIMIT ? OFFSET ?
+SELECT u.id, u.username, u.password_hash, u.locked, u.expired_at, u.created_at, s.id, s.name, s.description, s.maintainer_id, s.master_key_hash, s.encrypted_data, s.created_at, a.secret_name, a.action, a.created_at FROM access_log a INNER JOIN users u ON u.id = user_id INNER JOIN stashes s ON s.id = stash_id ORDER BY a.created_at DESC LIMIT ? OFFSET ?
 `
 
 type ListAccessLogParams struct {
@@ -65,7 +65,6 @@ func (q *Queries) ListAccessLog(ctx context.Context, arg ListAccessLogParams) ([
 			&i.User.ID,
 			&i.User.Username,
 			&i.User.PasswordHash,
-			&i.User.PasswordSalt,
 			&i.User.Locked,
 			&i.User.ExpiredAt,
 			&i.User.CreatedAt,

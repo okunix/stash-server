@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS users(
     id TEXT PRIMARY KEY DEFAULT (generate_uuid()),
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    password_salt TEXT NOT NULL,
     locked INTEGER NOT NULL CHECK (locked IN (0, 1)) DEFAULT 0,
     expired_at TEXT NULL, -- iso8601 
     created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
