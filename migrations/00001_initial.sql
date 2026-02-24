@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users(
     password_salt TEXT NOT NULL,
     locked INTEGER NOT NULL CHECK (locked IN (0, 1)) DEFAULT 0,
     expired_at TEXT NULL, -- iso8601 
-    created_at TEXT NOT NULL DEFAULT (datetime()) -- iso8601
+    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
 );
 
 CREATE TABLE IF NOT EXISTS stashes (
@@ -18,13 +18,13 @@ CREATE TABLE IF NOT EXISTS stashes (
     master_key_hash TEXT NOT NULL,
     --master_key_salt TEXT NOT NULL UNIQUE,
     encrypted_data TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime()) -- iso8601
+    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
 );
 
 CREATE TABLE IF NOT EXISTS stash_member (
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     stash_id TEXT NOT NULL REFERENCES stashes(id) ON DELETE CASCADE,
-    created_at TEXT NOT NULL DEFAULT (datetime()), -- iso8601
+    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')), -- iso8601
     PRIMARY KEY (user_id, stash_id)
 );
 
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS access_log (
     stash_id TEXT NOT NULL REFERENCES stashes(id) ON DELETE NO ACTION,
     secret_name TEXT NOT NULL,
     action TEXT NOT NULL,
-    created_at TEXT NOT NULL DEFAULT (datetime()) -- iso8601
+    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
 );
 -- +goose StatementEnd
 
