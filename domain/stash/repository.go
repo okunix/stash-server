@@ -35,7 +35,6 @@ type GetStashParams struct {
 type ListStashesParams struct {
 	Limit        uint
 	Offset       uint
-	Total        uint
 	Search       string
 	MaintainerID uuid.UUID
 }
@@ -46,7 +45,7 @@ type CommitDataParams struct {
 }
 
 type Repository interface {
-	ListStashes(ctx context.Context, params ListStashesParams) ([]*Stash, error)
+	ListStashes(ctx context.Context, params ListStashesParams) ([]*Stash, int64, error)
 	GetStash(ctx context.Context, params GetStashParams) (*Stash, error)
 	CreateStash(ctx context.Context, params CreateStashParams) (*Stash, error)
 	UpdateStash(ctx context.Context, params UpdateStashParams) (*Stash, error)
