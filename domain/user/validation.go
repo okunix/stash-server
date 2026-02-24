@@ -14,7 +14,6 @@ var (
 	ErrInvalidUsername = errors.New("Invalid username provided")
 	ErrInvalidPassword = errors.New("Invalid password provided")
 	ErrNoPasswordHash  = errors.New("password hash must be provided")
-	ErrNoPasswordSalt  = errors.New("password salt must be provided")
 )
 
 func ValidateUsername(username string) error {
@@ -34,13 +33,6 @@ func ValidatePassword(password string) error {
 func ValidatePasswordHash(passwordHash string) error {
 	if len(passwordHash) < 1 {
 		return ErrNoPasswordHash
-	}
-	return nil
-}
-
-func ValidatePasswordSalt(salt string) error {
-	if len(salt) < 1 {
-		return ErrNoPasswordSalt
 	}
 	return nil
 }

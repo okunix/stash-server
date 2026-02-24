@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,7 +12,6 @@ type User struct {
 	ID           uuid.UUID  `json:"id"`
 	Username     string     `json:"string"`
 	PasswordHash string     `json:"-"`
-	PasswordSalt string     `json:"-"`
 	Locked       bool       `json:"locked"`
 	ExpiredAt    *time.Time `json:"expired_at,omitempty"`
 	CreatedAt    time.Time  `json:"created_at"`
@@ -33,14 +33,13 @@ type DeleteUserParams struct {
 type UpdateUserParams struct {
 	ID           uuid.UUID
 	PasswordHash string
-	PasswordSalt string
 	Locked       bool
 	ExpiredAt    *time.Time
 }
 
 type ListUsersParams struct {
-	limit  uint
-	offset uint
+	Limit  uint
+	Offset uint
 }
 
 type Repository interface {
@@ -50,3 +49,7 @@ type Repository interface {
 	UpdateUser(ctx context.Context, params UpdateUserParams) (*User, error)
 	DeleteUser(ctx context.Context, params DeleteUserParams) error
 }
+
+var (
+	ErrNotFound = errors.New("user not found")
+)
