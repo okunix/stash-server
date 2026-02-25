@@ -22,14 +22,6 @@ type GetUserParams struct {
 	PasswordHash string
 }
 
-type GetUserByUsernameParams struct {
-	Username string
-}
-
-type DeleteUserParams struct {
-	ID uuid.UUID
-}
-
 type UpdateUserParams struct {
 	ID           uuid.UUID
 	PasswordHash string
@@ -45,9 +37,9 @@ type ListUsersParams struct {
 type Repository interface {
 	ListUsers(ctx context.Context, params ListUsersParams) ([]*User, int64, error)
 	GetUser(ctx context.Context, params GetUserParams) (*User, error)
-	GetUserByUsername(ctx context.Context, params GetUserByUsernameParams) (*User, error)
+	GetUserByUsername(ctx context.Context, username string) (*User, error)
 	UpdateUser(ctx context.Context, params UpdateUserParams) (*User, error)
-	DeleteUser(ctx context.Context, params DeleteUserParams) error
+	DeleteUser(ctx context.Context, id uuid.UUID) error
 }
 
 var (

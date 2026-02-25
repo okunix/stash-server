@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/google/uuid"
 	"gitlab.com/stash-password-manager/stash-server/domain/user"
 	"gitlab.com/stash-password-manager/stash-server/sqlc"
 )
@@ -32,8 +33,8 @@ func NewUserRepository(db *sql.DB) user.Repository {
 	return &userRepository{db: db, queries: sqlc.New(db)}
 }
 
-func (u *userRepository) DeleteUser(ctx context.Context, params user.DeleteUserParams) error {
-	rows, err := u.queries.DeleteUser(ctx, params.ID)
+func (u *userRepository) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	rows, err := u.queries.DeleteUser(ctx, id)
 	if rows == 0 {
 		return user.ErrNotFound
 	}
@@ -55,9 +56,9 @@ func (u *userRepository) GetUser(
 
 func (u *userRepository) GetUserByUsername(
 	ctx context.Context,
-	params user.GetUserByUsernameParams,
+	username string,
 ) (*user.User, error) {
-	userModel, err := u.queries.GetUserByUsername(ctx, params.Username)
+	userModel, err := u.queries.GetUserByUsername(ctx, username)
 	return userModelToUser(userModel), err
 }
 
