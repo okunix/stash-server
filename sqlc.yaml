@@ -25,6 +25,28 @@ sql:
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
+          - column: "stashes.maintainer_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+
+          - column: "stash_member.stash_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "stash_member.user_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+
+          - column: "access_log.stash_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "access_log.user_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
 
           - column: "users.created_at"
             go_type: "time.Time"

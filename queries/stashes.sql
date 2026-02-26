@@ -1,8 +1,11 @@
 -- name: ListStashes :many
-SELECT * FROM stashes WHERE maintainer_id = ? LIMIT ? OFFSET ?;
+SELECT sqlc.embed(stashes), sqlc.embed(users) FROM stashes INNER JOIN users ON users.id = stashes.maintainer_id WHERE stashes.maintainer_id = ? LIMIT ? OFFSET ?;
+
+-- name: ListStashMembers :many
+SELECT u.* FROM stash_member s INNER JOIN users u ON m.id = s.user_id WHERE stash_id = ?;
 
 -- name: GetStashByID :one
-SELECT * FROM stashes WHERE id = ?;
+SELECT sqlc.embed(stashes), sqlc.embed(users) FROM stashes INNER JOIN users ON stashes.maintainer_id = users.id WHERE stashes.id = ? ;
 
 -- name: UpdateStash :execrows
 UPDATE stashes SET name = ?, description = ?, master_key_hash = ?, encrypted_data = ? WHERE id = ?;
@@ -15,3 +18,6 @@ INSERT INTO stashes (name, description, maintainer_id, master_key_hash, encrypte
 
 -- name: DeleteStash :execrows
 DELETE FROM stashes WHERE id = ?;
+
+-- name: GetStashesCount :one
+SELECT COUNT(*) FROM stashes WHERE stashes.maintainer_id = ?;

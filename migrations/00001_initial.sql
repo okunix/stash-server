@@ -5,15 +5,15 @@ CREATE TABLE IF NOT EXISTS users(
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     locked INTEGER NOT NULL CHECK (locked IN (0, 1)) DEFAULT 0,
-    expired_at TEXT NULL, -- iso8601 
+    expired_at TEXT, -- iso8601 
     created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
 );
 
 CREATE TABLE IF NOT EXISTS stashes (
     id TEXT PRIMARY KEY DEFAULT (generate_uuid()),
     name TEXT NOT NULL UNIQUE,
-    description TEXT NULL,
-    maintainer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+    description TEXT,
+    maintainer_id TEXT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
     --master_key_salt TEXT NOT NULL UNIQUE,
     encrypted_data TEXT,
