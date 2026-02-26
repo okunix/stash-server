@@ -5,17 +5,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/domain/stash"
-	"gitlab.com/stash-password-manager/stash-server/domain/user"
 )
 
 type AccessLog struct {
-	ID         uuid.UUID   `json:"id"`
-	User       user.User   `json:"user"`
-	Stash      stash.Stash `json:"stash"`
-	SecretName string      `json:"secret_name"`
-	Action     string      `json:"action"`
-	CreatedAt  time.Time   `json:"created_at"`
+	ID         uuid.UUID `json:"id"`
+	UserID     uuid.UUID `json:"user"`
+	StashID    uuid.UUID `json:"stash"`
+	SecretName string    `json:"secret_name"`
+	Action     string    `json:"action"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type ListLogsParams struct {
