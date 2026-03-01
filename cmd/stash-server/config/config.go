@@ -42,6 +42,7 @@ func ReadFromFile(path string) (Config, error) {
 	if err != nil {
 		return DefaultConfig(), err
 	}
+	defer file.Close()
 	return Read(file)
 }
 
