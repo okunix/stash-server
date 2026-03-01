@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"net"
 
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
@@ -29,11 +30,10 @@ type PostgresInitParams struct {
 
 func (p PostgresInitParams) String() string {
 	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		"postgres://%s:%s@%s/%s?sslmode=%s",
 		p.User,
 		p.Password,
-		p.Host,
-		p.Port,
+		net.JoinHostPort(p.Host, p.Port),
 		p.Database,
 		p.SSLMode,
 	)
