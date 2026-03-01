@@ -2,9 +2,7 @@ name: stash-server
 
 services:
   stash:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: stash-server
     ports:
       - 7878:7878/tcp
@@ -17,16 +15,17 @@ services:
     image: postgres:18-trixie
     container_name: stash-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: stash_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=stash_db
     ports:
       - 5432:5432/tcp
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
       test:
-        ["CMD", "pg_isready", "-d", "$$POSTGRES_DB", "-U", "$$POSTGRES_USER"]
+        - "CMD-SHELL"
+        - "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
       interval: 10s
       timeout: 10s
       retries: 3

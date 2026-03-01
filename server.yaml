@@ -1,0 +1,7 @@
+addr: 127.0.0.1:7878
+postgres:
+  host: stash-postgres
+  port: 5432
+  user: postgres
+  password: postgres
+  sslMode: disable

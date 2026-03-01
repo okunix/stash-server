@@ -1,39 +1,40 @@
 -- +goose Up
 -- +goose StatementBegin
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS users(
-    id TEXT PRIMARY KEY DEFAULT (generate_uuid()),
+    id UUID PRIMARY KEY DEFAULT (gen_random_uuid()),
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    locked INTEGER NOT NULL CHECK (locked IN (0, 1)) DEFAULT 0,
-    expired_at TEXT, -- iso8601 
-    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
+    locked BOOLEAN NOT NULL DEFAULT false,
+    expired_at TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE IF NOT EXISTS stashes (
-    id TEXT PRIMARY KEY DEFAULT (generate_uuid()),
+    id UUID PRIMARY KEY DEFAULT (gen_random_uuid()),
     name TEXT NOT NULL UNIQUE,
     description TEXT,
-    maintainer_id TEXT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+    maintainer_id UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
-    --master_key_salt TEXT NOT NULL UNIQUE,
     encrypted_data TEXT,
-    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
+    created_at TIMESTAMP NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE IF NOT EXISTS stash_member (
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    stash_id TEXT NOT NULL REFERENCES stashes(id) ON DELETE CASCADE,
-    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')), -- iso8601
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    stash_id UUID NOT NULL REFERENCES stashes(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT (now()),
     PRIMARY KEY (user_id, stash_id)
 );
 
 CREATE TABLE IF NOT EXISTS access_log (
-    id TEXT PRIMARY KEY DEFAULT (generate_uuid()),
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE NO ACTION,
-    stash_id TEXT NOT NULL REFERENCES stashes(id) ON DELETE NO ACTION,
+    id UUID PRIMARY KEY DEFAULT (gen_random_uuid()),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE NO ACTION,
+    stash_id UUID NOT NULL REFERENCES stashes(id) ON DELETE NO ACTION,
     secret_name TEXT NOT NULL,
     action TEXT NOT NULL,
-    created_at TEXT NOT NULL DEFAULT (strftime('%FT%TZ')) -- iso8601
+    created_at TIMESTAMP NOT NULL DEFAULT (now())
 );
 -- +goose StatementEnd
 

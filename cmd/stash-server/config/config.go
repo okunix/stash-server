@@ -8,7 +8,7 @@ import (
 )
 
 type PostgresConfig struct {
-	Host     string `yaml:"addr"`
+	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	Database string `yaml:"database"`
 	User     string `yaml:"user"`
