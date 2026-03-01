@@ -1,0 +1,59 @@
+package dto
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/stash"
+)
+
+type StashResponse struct {
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Description  *string   `json:"desc"`
+	MaintainerID uuid.UUID `json:"maintainer_id"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type GetStashByIDRequest struct {
+	StashID uuid.UUID `json:"stash_id"`
+}
+
+type CreateStashRequest struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	MasterKey   string  `json:"master_key"`
+}
+
+func (req CreateStashRequest) Validate() (map[string]string, bool) {
+	problems := make(map[string]string)
+	if err := stash.ValidateName(req.Name); err != nil {
+		problems["name"] = err.Error()
+	}
+	if err := stash.ValidateDescription(req.Description); err != nil {
+		problems["description"] = err.Error()
+	}
+	return problems, len(problems) == 0
+}
+
+type UpdateStashRequest struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+}
+
+func (req UpdateStashRequest) Validate() (map[string]string, bool) {
+	problems := make(map[string]string)
+	if err := stash.ValidateName(req.Name); err != nil {
+		problems["name"] = err.Error()
+	}
+	if err := stash.ValidateDescription(req.Description); err != nil {
+		problems["description"] = err.Error()
+	}
+	return problems, len(problems) == 0
+}
+
+type ListStashesRequest struct {
+	Limit  uint   `json:"limit"`
+	Offset uint   `json:"offset"`
+	Search string `json:"search"`
+}
