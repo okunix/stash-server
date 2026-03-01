@@ -24,8 +24,11 @@ func ValidateName(name string) error {
 	return nil
 }
 
-func ValidateDescription(description string) error {
-	if !descRegex.MatchString(description) {
+func ValidateDescription(description *string) error {
+	if description == nil {
+		return nil
+	}
+	if !descRegex.MatchString(*description) {
 		return ErrInvalidDesc
 	}
 	return nil
