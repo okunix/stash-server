@@ -40,8 +40,10 @@ run-air out="./bin/stash-server":
         --build.exclude_dir "bin" \
         --misc.clean_on_exit "true"
 
+# run docker compose with build and force-recreate options
 compose:
     docker compose up --build --force-recreate
 
+# run docker compose down
 compose-down:
     docker compose down
