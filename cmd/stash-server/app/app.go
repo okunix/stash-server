@@ -55,7 +55,7 @@ func Run(configFilePath string) {
 	}
 
 	// running http server
-	serverOptions := web.ServerOptions{Addr: conf.Addr}
+	serverOptions := web.ServerOptions{Addr: conf.Addr, DB: postgres.Postgres()}
 	server := web.NewServer(serverOptions)
 	go func() {
 		slog.Info("application server started", "addr", server.Addr)

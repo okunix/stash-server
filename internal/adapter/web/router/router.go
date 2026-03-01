@@ -9,7 +9,7 @@ import (
 )
 
 type RouterOptions struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func Router(opts RouterOptions) http.Handler {
@@ -17,7 +17,7 @@ func Router(opts RouterOptions) http.Handler {
 
 	router.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		var id string
-		opts.db.QueryRowContext(r.Context(), "SELECT generate_uuid();").Scan(&id)
+		opts.DB.QueryRowContext(r.Context(), "SELECT gen_random_uuid();").Scan(&id)
 		fmt.Fprintf(w, "%s\n", id)
 	})
 
@@ -25,7 +25,7 @@ func Router(opts RouterOptions) http.Handler {
 	handler = middleware.NoCache(handler)
 	handler = middleware.Logger(handler)
 	handler = middleware.RealIP(handler)
-	handler = middleware.Recovery(handler)
+	//handler = middleware.Recovery(handler)
 
 	return handler
 }

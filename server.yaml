@@ -1,6 +1,6 @@
-addr: 127.0.0.1:7878
+addr: 0.0.0.0:7879
 postgres:
-  host: stash-postgres
+  host: localhost
   port: 5432
   user: postgres
   password: postgres

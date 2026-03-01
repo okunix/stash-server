@@ -24,7 +24,7 @@ type Config struct {
 
 func DefaultConfig() Config {
 	return Config{
-		Addr:    "127.0.0.1:7878",
+		Addr:    "0.0.0.0:7878",
 		LogFile: "",
 		PostgresConfig: PostgresConfig{
 			Host:     "localhost",
