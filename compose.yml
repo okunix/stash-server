@@ -1,7 +1,21 @@
-name: stash-server-dev
+name: stash-server
+
 services:
+  stash:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stash-server
+    ports:
+      - 7878:7878/tcp
+    volumes:
+      - ./server.yaml:/etc/stash/server.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
   postgres:
     image: postgres:18-trixie
+    container_name: stash-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -10,7 +24,6 @@ services:
       - 5432:5432/tcp
     volumes:
       - postgres_data:/var/lib/postgresql
-      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro
     healthcheck:
       test:
         ["CMD", "pg_isready", "-d", "$$POSTGRES_DB", "-U", "$$POSTGRES_USER"]

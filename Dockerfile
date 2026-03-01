@@ -7,6 +7,8 @@ RUN just build
 
 FROM alpine:3.23
 COPY --from=builder /app/bin/* .
-HEALTHCHECK CMD [ "sh", "-c" "wget -qO- http://localhost/health >/dev/null || exit 1"]
+
+HEALTHCHECK CMD [ "sh", "-c" "wget -qO- http://localhost:7878/health >/dev/null || exit 1"]
+EXPOSE 7878
 
 CMD [ "/stash-server" ]
