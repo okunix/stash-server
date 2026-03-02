@@ -38,6 +38,7 @@ run-air out="./bin/stash-server":
         --build.bin "{{out}}" \
         --build.args_bin "--config=./server.yaml" \
         --build.exclude_dir "bin" \
+        --build.include_file "server.yaml" \
         --misc.clean_on_exit "true"
 
 # run docker compose with build and force-recreate options
