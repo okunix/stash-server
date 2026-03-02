@@ -1,4 +1,4 @@
-package auth
+package jwt
 
 import (
 	"crypto/rand"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
 )
 
 var (
@@ -24,7 +25,7 @@ func newHmacSecret(length int) []byte {
 }
 
 type UserClaims struct {
-	UserID uuid.UUID
+	auth.User
 	jwt.RegisteredClaims
 }
 
@@ -38,7 +39,7 @@ func WithExpirationTime(expiresAt time.Time) userClaimsOption {
 }
 
 func newUserClaims(userID uuid.UUID, opts ...userClaimsOption) (UserClaims, error) {
-	userClaims := UserClaims{UserID: userID}
+	userClaims := UserClaims{User: auth.User{UserID: userID}}
 	for _, opt := range opts {
 		if err := opt(&userClaims); err != nil {
 			return userClaims, err
