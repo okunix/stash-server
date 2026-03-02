@@ -32,10 +32,10 @@ func SendMessage(w http.ResponseWriter, m Message) error {
 }
 
 var (
-	OkMessage                  = NewMessage(http.StatusOK, "ok")
-	CreatedMessage             = NewMessage(http.StatusCreated, "created")
-	ForbiddenMessage           = NewMessage(http.StatusForbidden, "forbidden")
-	UnauthorizedMessage        = NewMessage(http.StatusUnauthorized, "unauthorized")
-	TooManyRequestsMessage     = NewMessage(http.StatusTooManyRequests, "too many requests")
-	InternalServerErrorMessage = NewMessage(http.StatusInternalServerError, "internal server error")
+	Ok                  = NewMessage(http.StatusOK, "ok")
+	Created             = NewMessage(http.StatusCreated, "created")
+	Forbidden           = NewMessage(http.StatusForbidden, "forbidden")
+	Unauthorized        = NewMessage(http.StatusUnauthorized, "unauthorized")
+	TooManyRequests     = NewMessage(http.StatusTooManyRequests, "too many requests")
+	InternalServerError = NewMessage(http.StatusInternalServerError, "internal server error")
 )
