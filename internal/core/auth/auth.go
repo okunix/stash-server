@@ -11,7 +11,7 @@ const (
 )
 
 type User struct {
-	UserID uuid.UUID
+	UserID uuid.UUID `json:"user_id"`
 }
 
 func ContextWithUser(ctx context.Context, user User) context.Context {
