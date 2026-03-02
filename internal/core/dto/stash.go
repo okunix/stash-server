@@ -15,6 +15,11 @@ type StashResponse struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
+type ListStashResponse struct {
+	Page   *Page           `json:"page,omitempty"`
+	Result []StashResponse `json:"result"`
+}
+
 type GetStashByIDRequest struct {
 	StashID uuid.UUID `json:"stash_id"`
 }
@@ -56,4 +61,24 @@ type ListStashesRequest struct {
 	Limit  uint   `json:"limit"`
 	Offset uint   `json:"offset"`
 	Search string `json:"search"`
+}
+
+type StashMemberResponse struct {
+	UserID   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
+	Since    time.Time `json:"since"`
+}
+
+type ListStashMemberResponse struct {
+	Members []StashMemberResponse `json:"members"`
+}
+
+type AddStashMemberRequest struct {
+	StashID uuid.UUID `json:"stash_id"`
+	UserID  uuid.UUID `json:"user_id"`
+}
+
+type RemoveStashMemberRequest struct {
+	StashID uuid.UUID `json:"stash_id"`
+	UserID  uuid.UUID `json:"user_id"`
 }
