@@ -28,7 +28,7 @@ func NewMessage(code int, message string) Message {
 }
 
 func SendMessage(w http.ResponseWriter, m Message) error {
-	return Write(w, m.Code, m.Message)
+	return Write(w, m.Code, m)
 }
 
 var (
