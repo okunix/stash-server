@@ -22,11 +22,11 @@ func Authenticated(next http.Handler) http.Handler {
 			return
 		}
 		claims, err := auth.ParseJWT(tokenString)
-		if err != nil {
+		if err != nil || claims == nil {
 			jsonutil.SendMessage(w, jsonutil.Unauthorized)
 			return
 		}
-		ctx := auth.ContextWithUser(r.Context(), claims.User)
+		ctx := auth.WithUser(r.Context(), &claims.CurrentUser)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

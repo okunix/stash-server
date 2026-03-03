@@ -28,7 +28,7 @@ func newHmacSecret(length int) []byte {
 }
 
 type UserClaims struct {
-	User
+	CurrentUser
 	jwt.RegisteredClaims
 }
 
@@ -41,8 +41,17 @@ func WithExpirationTime(expiresAt time.Time) userClaimsOption {
 	}
 }
 
-func newUserClaims(userID uuid.UUID, opts ...userClaimsOption) (UserClaims, error) {
-	userClaims := UserClaims{User: User{UserID: userID}}
+func newUserClaims(
+	userID uuid.UUID,
+	username string,
+	opts ...userClaimsOption,
+) (UserClaims, error) {
+	userClaims := UserClaims{
+		CurrentUser: CurrentUser{
+			UserID:   userID,
+			Username: username,
+		},
+	}
 	for _, opt := range opts {
 		if err := opt(&userClaims); err != nil {
 			return userClaims, err
@@ -51,8 +60,8 @@ func newUserClaims(userID uuid.UUID, opts ...userClaimsOption) (UserClaims, erro
 	return userClaims, nil
 }
 
-func JWT(userID uuid.UUID, opts ...userClaimsOption) (string, error) {
-	claims, err := newUserClaims(userID, opts...)
+func JWT(userID uuid.UUID, username string, opts ...userClaimsOption) (string, error) {
+	claims, err := newUserClaims(userID, username, opts...)
 	if err != nil {
 		return "", err
 	}

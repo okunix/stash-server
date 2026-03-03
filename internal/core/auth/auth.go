@@ -7,18 +7,19 @@ import (
 )
 
 const (
-	userKey = "user"
+	userContextKey = "user"
 )
 
-type User struct {
-	UserID uuid.UUID `json:"user_id"`
+type CurrentUser struct {
+	UserID   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
 }
 
-func ContextWithUser(ctx context.Context, user User) context.Context {
-	return context.WithValue(ctx, userKey, user)
+func WithUser(ctx context.Context, user *CurrentUser) context.Context {
+	return context.WithValue(ctx, userContextKey, user)
 }
 
-func GetUserFromContext(ctx context.Context) (User, bool) {
-	user, ok := ctx.Value(userKey).(User)
+func UserFromContext(ctx context.Context) (*CurrentUser, bool) {
+	user, ok := ctx.Value(userContextKey).(*CurrentUser)
 	return user, ok
 }
