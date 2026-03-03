@@ -41,3 +41,8 @@ type CommitDataParams struct {
 	StashID uuid.UUID
 	Data    string
 }
+
+type AddMemberParams struct {
+	UserID  uuid.UUID
+	StashID uuid.UUID
+}

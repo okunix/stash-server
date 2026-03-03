@@ -40,7 +40,7 @@ type StashRepository interface {
 	CreateStash(ctx context.Context, params stash.CreateStashParams) (*stash.Stash, error)
 	UpdateStash(ctx context.Context, params stash.UpdateStashParams) (*stash.Stash, error)
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error
-	AddMember(ctx context.Context, userID uuid.UUID) error
+	AddMember(ctx context.Context, params stash.AddMemberParams) error
 	CommitData(ctx context.Context, params stash.CommitDataParams) error
 }
 
