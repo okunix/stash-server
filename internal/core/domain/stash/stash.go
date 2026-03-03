@@ -27,7 +27,7 @@ type CreateStashParams struct {
 	Description   *string
 	MaintainerID  uuid.UUID
 	MasterKeyHash string
-	MasterKeySalt string
+	EncryptedData string
 }
 
 type ListStashesParams struct {

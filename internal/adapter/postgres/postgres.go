@@ -63,3 +63,7 @@ func migrate(ctx context.Context, dialect goose.Dialect, db *sql.DB, migrations 
 	slog.Info("database migration completed")
 	return nil
 }
+
+type scannable interface {
+	Scan(dest ...any) error
+}
