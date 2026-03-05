@@ -18,12 +18,12 @@ type userService struct {
 }
 
 type UserServiceParams struct {
-	userRepository ports.UserRepository
+	UserRepository ports.UserRepository
 }
 
 func NewUserService(params UserServiceParams) ports.UserService {
 	return &userService{
-		userRepo: params.userRepository,
+		userRepo: params.UserRepository,
 	}
 }
 
@@ -45,9 +45,21 @@ func (u *userService) hashPassword(password string) (string, error) {
 	return passwordHash, nil
 }
 
+func (u *userService) comparePasswordHash(hash, password string) (bool, error) {
+	kdf, existingHash, err := crypto.NewArgon2IDFromString(hash)
+	if err != nil {
+		return false, err
+	}
+	passwordHash, err := kdf.DeriveKey([]byte(password))
+	if err != nil {
+		return false, err
+	}
+	return kdf.Compare(existingHash, passwordHash.Bytes()), nil
+}
+
 func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) error {
 	if problems, ok := req.Validate(); !ok {
-		return ValidationError(problems)
+		return ports.ValidationError(problems)
 	}
 
 	passwordHash, err := u.hashPassword(req.Password)
@@ -74,18 +86,16 @@ func (u *userService) GetUserToken(
 	req dto.GetUserTokenRequest,
 ) (string, error) {
 	slog.Info("retriving jwt token for user", "username", req.Username)
-	passwordHash, err := u.hashPassword(req.Password)
-	if err != nil {
-		return "", err
-	}
 
-	user, err := u.userRepo.GetUser(ctx, user.GetUserParams{
-		Username:     req.Username,
-		PasswordHash: passwordHash,
-	})
+	user, err := u.userRepo.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		slog.Warn("failed user lookup", "username", req.Username)
-		return "", err
+		return "", errors.New("invalid credentials")
+	}
+
+	ok, _ := u.comparePasswordHash(user.PasswordHash, req.Password)
+	if !ok {
+		return "", errors.New("invalid credentials")
 	}
 
 	slog.Info("generating jwt for user", "user_id", user.ID, "username", user.Username)
