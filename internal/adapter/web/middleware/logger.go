@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/webutil"
 )
 
 type wrappedWriter struct {
@@ -22,6 +24,7 @@ func Logger(next http.Handler) http.Handler {
 		writer := &wrappedWriter{ResponseWriter: w, statusCode: http.StatusOK}
 		next.ServeHTTP(writer, r)
 		latency := time.Since(now).Microseconds()
+		requestID, _ := webutil.RequestID(r)
 		slog.Info(
 			"incoming request",
 			"path", r.URL.Path,
@@ -29,6 +32,7 @@ func Logger(next http.Handler) http.Handler {
 			"statusCode", writer.statusCode,
 			"latency", latency,
 			"remoteAddr", r.RemoteAddr,
+			"requestID", requestID,
 		)
 	})
 }
