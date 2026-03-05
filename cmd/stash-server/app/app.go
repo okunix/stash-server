@@ -14,6 +14,7 @@ import (
 	"gitlab.com/stash-password-manager/stash-server/cmd/stash-server/config"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/postgres"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/services"
 	"gitlab.com/stash-password-manager/stash-server/migrations"
 )
 
@@ -54,8 +55,20 @@ func Run(configFilePath string) {
 		os.Exit(1)
 	}
 
+	// initializing user service instance
+	userRepository := postgres.NewUserRepository(postgres.Postgres())
+	userService := services.NewUserService(
+		services.UserServiceParams{
+			UserRepository: userRepository,
+		},
+	)
+
 	// running http server
-	serverOptions := web.ServerOptions{Addr: conf.Addr, DB: postgres.Postgres()}
+	serverOptions := web.ServerOptions{
+		Addr:        conf.Addr,
+		DB:          postgres.Postgres(),
+		UserService: userService,
+	}
 	server := web.NewServer(serverOptions)
 	go func() {
 		slog.Info("application server started", "addr", server.Addr)

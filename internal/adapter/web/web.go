@@ -5,15 +5,17 @@ import (
 	"net/http"
 
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/router"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
 )
 
 type ServerOptions struct {
-	Addr string
-	DB   *sql.DB
+	Addr        string
+	DB          *sql.DB
+	UserService ports.UserService
 }
 
 func NewServer(opts ServerOptions) *http.Server {
-	handler := router.Router(router.RouterOptions{DB: opts.DB})
+	handler := router.Router(router.RouterOptions{DB: opts.DB, UserService: opts.UserService})
 	return &http.Server{
 		Addr:           opts.Addr,
 		MaxHeaderBytes: 1 << 20,
