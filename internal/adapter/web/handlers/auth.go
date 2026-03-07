@@ -9,9 +9,6 @@ import (
 )
 
 func Login(userService ports.UserService) apiFunc {
-	type response struct {
-		Token string `json:"token"`
-	}
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 		req, err := jsonutil.Read[dto.GetUserTokenRequest](r.Body)
@@ -22,7 +19,7 @@ func Login(userService ports.UserService) apiFunc {
 		if err != nil {
 			return err
 		}
-		return jsonutil.Write(w, http.StatusOK, response{token})
+		return jsonutil.Write(w, http.StatusOK, dto.GetUserTokenResponse{Token: token})
 	}
 }
 

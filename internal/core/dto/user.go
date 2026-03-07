@@ -24,3 +24,7 @@ func (req CreateUserRequest) Validate() (problems map[string]string, ok bool) {
 	}
 	return problems, len(problems) == 0
 }
+
+type GetUserTokenResponse struct {
+	Token string `json:"token"`
+}
