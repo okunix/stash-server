@@ -20,7 +20,7 @@ func (f apiFunc) Unwrap() http.Handler {
 			return
 		}
 		if errors.As(err, &ports.ValidationError{}) {
-			jsonutil.Write(w, http.StatusBadRequest, err.(*ports.ValidationError))
+			jsonutil.Write(w, http.StatusBadRequest, err.(ports.ValidationError))
 			return
 		}
 		if errors.Is(err, io.EOF) {
