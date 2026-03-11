@@ -27,11 +27,6 @@ func NewUserService(params UserServiceParams) ports.UserService {
 	}
 }
 
-var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrInvalidCredentials = errors.New("invalid credentials provided")
-)
-
 func (u *userService) hashPassword(password string) (string, error) {
 	hashFunc, err := crypto.NewArgon2ID()
 	if err != nil {
@@ -59,26 +54,32 @@ func (u *userService) comparePasswordHash(hash, password string) (bool, error) {
 
 func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) error {
 	if problems, ok := req.Validate(); !ok {
-		return ports.ValidationError(problems)
+		return ports.NewValidationError(problems)
 	}
 
 	passwordHash, err := u.hashPassword(req.Password)
 	if err != nil {
 		slog.Error("password hash failed", "error", err.Error())
-		return err
+		return ports.InternalError(err)
 	}
 
 	_, err = u.userRepo.AddUser(ctx, user.AddUserParams{
 		Username:     req.Username,
 		PasswordHash: passwordHash,
 	})
-	return err
+	if err != nil {
+		return ports.BadRequestError(err)
+	}
+	return nil
 }
 
 // use only in admin cli
 func (u *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	slog.Info("deleting user", "id", userID)
-	return u.DeleteUser(ctx, userID)
+	if err := u.DeleteUser(ctx, userID); err != nil {
+		return ports.NotFoundError(err)
+	}
+	return nil
 }
 
 func (u *userService) GetUserToken(
@@ -90,16 +91,20 @@ func (u *userService) GetUserToken(
 	user, err := u.userRepo.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		slog.Warn("failed user lookup", "username", req.Username)
-		return "", errors.New("invalid credentials")
+		return "", ports.BadRequestError(errors.New("invalid credentials"))
 	}
 
 	ok, _ := u.comparePasswordHash(user.PasswordHash, req.Password)
 	if !ok {
-		return "", errors.New("invalid credentials")
+		return "", ports.BadRequestError(errors.New("invalid credentials"))
 	}
 
 	slog.Info("generating jwt for user", "user_id", user.ID, "username", user.Username)
-	return auth.JWT(user.ID, user.Username)
+	token, err := auth.JWT(user.ID, user.Username)
+	if err != nil {
+		return "", ports.InternalError(err)
+	}
+	return token, nil
 }
 
 func (u *userService) LockUser(ctx context.Context, userID uuid.UUID) error {
