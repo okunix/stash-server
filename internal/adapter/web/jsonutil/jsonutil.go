@@ -21,10 +21,15 @@ func Read[T any](r io.Reader) (T, error) {
 type Message struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Detail  any    `json:"detail,omitempty"`
 }
 
-func NewMessage(code int, message string) Message {
-	return Message{Code: code, Message: message}
+func NewMessage(code int, message string, detail ...any) Message {
+	var messageDetail any
+	if len(detail) > 0 {
+		messageDetail = detail[0]
+	}
+	return Message{Code: code, Message: message, Detail: messageDetail}
 }
 
 func SendMessage(w http.ResponseWriter, m Message) error {
@@ -32,12 +37,18 @@ func SendMessage(w http.ResponseWriter, m Message) error {
 }
 
 var (
-	Ok                  = NewMessage(http.StatusOK, "ok")
-	Created             = NewMessage(http.StatusCreated, "created")
-	NotFound            = NewMessage(http.StatusNotFound, "not found")
-	Forbidden           = NewMessage(http.StatusForbidden, "forbidden")
-	BadRequest          = NewMessage(http.StatusBadRequest, "bad request")
-	Unauthorized        = NewMessage(http.StatusUnauthorized, "unauthorized")
-	TooManyRequests     = NewMessage(http.StatusTooManyRequests, "too many requests")
-	InternalServerError = NewMessage(http.StatusInternalServerError, "internal server error")
+	Ok                  = NewMessage(http.StatusOK, "Ok")
+	Created             = NewMessage(http.StatusCreated, "Created")
+	NotFound            = NewMessage(http.StatusNotFound, "Not Found")
+	Forbidden           = NewMessage(http.StatusForbidden, "Forbidden")
+	BadRequest          = NewMessage(http.StatusBadRequest, "Bad Request")
+	Unauthorized        = NewMessage(http.StatusUnauthorized, "Unauthorized")
+	TooManyRequests     = NewMessage(http.StatusTooManyRequests, "Too Many Requests")
+	InternalServerError = NewMessage(http.StatusInternalServerError, "Internal Server Error")
+	ValidationError     = NewMessage(http.StatusBadRequest, "Validation Error")
 )
+
+func WithDetail(m Message, detail any) Message {
+	m.Detail = detail
+	return m
+}
