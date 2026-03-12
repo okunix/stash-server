@@ -100,7 +100,7 @@ func (u *userService) GetUserToken(
 	}
 
 	slog.Info("generating jwt for user", "user_id", user.ID, "username", user.Username)
-	token, err := auth.JWT(user.ID, user.Username)
+	token, err := auth.JWT(user.ID, user.Username, user.Role)
 	if err != nil {
 		return "", ports.InternalError(err)
 	}

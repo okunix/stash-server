@@ -25,6 +25,7 @@ type userSQLModel struct {
 	username     string
 	passwordHash string
 	locked       bool
+	role         string
 	expiredAt    sql.NullTime
 	createdAt    time.Time
 }
@@ -42,6 +43,7 @@ func (u *userSQLModel) Domain() *user.User {
 		Username:     u.username,
 		PasswordHash: u.passwordHash,
 		Locked:       u.locked,
+		Role:         u.role,
 		ExpiredAt:    expiredAt,
 		CreatedAt:    u.createdAt,
 	}
@@ -54,6 +56,7 @@ func scanUserSQLRow(row scannable) (*userSQLModel, error) {
 		&res.username,
 		&res.passwordHash,
 		&res.locked,
+		&res.role,
 		&res.expiredAt,
 		&res.createdAt,
 	)
@@ -61,7 +64,7 @@ func scanUserSQLRow(row scannable) (*userSQLModel, error) {
 }
 
 const addUserStmt = `
-INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, password_hash, locked, expired_at, created_at;
+INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, password_hash, locked, role, expired_at, created_at;
 `
 
 func (u *userRepository) AddUser(
@@ -92,7 +95,7 @@ func (u *userRepository) DeleteUser(
 }
 
 const updateUserStmt = `
-UPDATE users SET password_hash = $2, locked = $3, expired_at = $4 WHERE id = $1 RETURNING id, username, password_hash, locked, expired_at, created_at;
+UPDATE users SET password_hash = $2, locked = $3, expired_at = $4 WHERE id = $1 RETURNING id, username, password_hash, locked, role, expired_at, created_at;
 `
 
 func (u *userRepository) UpdateUser(
@@ -110,7 +113,7 @@ func (u *userRepository) UpdateUser(
 	return userModel.Domain(), err
 }
 
-const getUserStmt = `SELECT id, username, password_hash, locked, expired_at, created_at FROM users WHERE username = $1 AND password_hash = $2 LIMIT 1;`
+const getUserStmt = `SELECT id, username, password_hash, locked, role, expired_at, created_at FROM users WHERE username = $1 AND password_hash = $2 LIMIT 1;`
 
 func (u *userRepository) GetUser(
 	ctx context.Context,
@@ -125,14 +128,14 @@ func (u *userRepository) GetUser(
 	return userModel.Domain(), err
 }
 
-const getUserByIDStmt = `SELECT id, username, password_hash, locked, expired_at, created_at FROM users WHERE id = $1 LIMIT 1;`
+const getUserByIDStmt = `SELECT id, username, password_hash, locked, role, expired_at, created_at FROM users WHERE id = $1 LIMIT 1;`
 
 func (u *userRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*user.User, error) {
 	userModel, err := scanUserSQLRow(u.db.QueryRowContext(ctx, getUserByIDStmt, id))
 	return userModel.Domain(), err
 }
 
-const getUserByUsernameStmt = `SELECT id, username, password_hash, locked, expired_at, created_at FROM users WHERE username = $1 LIMIT 1;`
+const getUserByUsernameStmt = `SELECT id, username, password_hash, locked, role, expired_at, created_at FROM users WHERE username = $1 LIMIT 1;`
 
 func (u *userRepository) GetUserByUsername(
 	ctx context.Context,
@@ -143,7 +146,7 @@ func (u *userRepository) GetUserByUsername(
 }
 
 const (
-	listUsersStmt     = `SELECT id, username, password_hash, locked, expired_at, created_at FROM users LIMIT $1 OFFSET $2;`
+	listUsersStmt     = `SELECT id, username, password_hash, locked, role, expired_at, created_at FROM users LIMIT $1 OFFSET $2;`
 	getTotalUsersStmt = `SELECT COUNT(*) FROM users;`
 )
 

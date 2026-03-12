@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users(
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     locked BOOLEAN NOT NULL DEFAULT false,
+    role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('admin', 'user')),
     expired_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT (now())
 );

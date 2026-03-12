@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -23,7 +22,6 @@ func newHmacSecret(length int) []byte {
 	secret := make([]byte, length)
 	rand.Read(secret)
 	str := hex.EncodeToString(secret)
-	fmt.Printf("str: %v\n", str)
 	return []byte(str)
 }
 
@@ -44,12 +42,14 @@ func WithExpirationTime(expiresAt time.Time) userClaimsOption {
 func newUserClaims(
 	userID uuid.UUID,
 	username string,
+	role string,
 	opts ...userClaimsOption,
 ) (UserClaims, error) {
 	userClaims := UserClaims{
 		CurrentUser: CurrentUser{
 			UserID:   userID,
 			Username: username,
+			Role:     role,
 		},
 	}
 	for _, opt := range opts {
@@ -60,8 +60,8 @@ func newUserClaims(
 	return userClaims, nil
 }
 
-func JWT(userID uuid.UUID, username string, opts ...userClaimsOption) (string, error) {
-	claims, err := newUserClaims(userID, username, opts...)
+func JWT(userID uuid.UUID, username, role string, opts ...userClaimsOption) (string, error) {
+	claims, err := newUserClaims(userID, username, role, opts...)
 	if err != nil {
 		return "", err
 	}

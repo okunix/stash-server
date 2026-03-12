@@ -1,7 +1,6 @@
 package user
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +11,7 @@ type User struct {
 	Username     string     `json:"string"`
 	PasswordHash string     `json:"-"`
 	Locked       bool       `json:"locked"`
+	Role         string     `json:"role"`
 	ExpiredAt    *time.Time `json:"expired_at,omitempty"`
 	CreatedAt    time.Time  `json:"created_at"`
 }
@@ -36,8 +36,5 @@ type ListUsersParams struct {
 type AddUserParams struct {
 	Username     string
 	PasswordHash string
+	Role         string
 }
-
-var (
-	ErrNotFound = errors.New("user not found")
-)

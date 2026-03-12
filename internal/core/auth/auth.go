@@ -13,6 +13,7 @@ const (
 type CurrentUser struct {
 	UserID   uuid.UUID `json:"user_id"`
 	Username string    `json:"username"`
+	Role     string    `json:"role"`
 }
 
 func WithUser(ctx context.Context, user *CurrentUser) context.Context {
