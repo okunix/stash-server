@@ -11,13 +11,19 @@ var (
 )
 
 var (
-	ErrInvalidName     = errors.New("invalid name provided")
-	ErrInvalidDesc     = errors.New("invalid description provided")
-	ErrNoMasterKeyHash = errors.New("master key hash must be provided")
-	ErrNoMasterKeySalt = errors.New("master key salt must be provided")
+	ErrInvalidName     = errors.New("Invalid name provided")
+	ErrInvalidDesc     = errors.New("Invalid description provided")
+	ErrNoMasterKeyHash = errors.New("Master key hash must be provided")
+	ErrNoMasterKeySalt = errors.New("Master key salt must be provided")
 )
 
 func ValidateName(name string) error {
+	if len(name) < 1 {
+		return errors.New("Name is too short")
+	}
+	if len(name) > 255 {
+		return errors.New("Name is too long")
+	}
 	if !nameRegex.MatchString(name) {
 		return ErrInvalidName
 	}
@@ -27,6 +33,9 @@ func ValidateName(name string) error {
 func ValidateDescription(description *string) error {
 	if description == nil {
 		return nil
+	}
+	if len(*description) > 1000 {
+		return errors.New("Description is too long")
 	}
 	if !descRegex.MatchString(*description) {
 		return ErrInvalidDesc

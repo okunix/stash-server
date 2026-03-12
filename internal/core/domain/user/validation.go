@@ -2,21 +2,33 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
+	"slices"
 )
 
 var (
 	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_\-.]{2,20}$`)
-	passwordRegex = regexp.MustCompile(`^.{8,}$`)
+	passwordRegex = regexp.MustCompile(`^.{10,}$`)
+)
+
+const (
+	passwordMinLength = 10
 )
 
 var (
 	ErrInvalidUsername = errors.New("Invalid username provided")
 	ErrInvalidPassword = errors.New("Invalid password provided")
-	ErrNoPasswordHash  = errors.New("password hash must be provided")
+	ErrNoPasswordHash  = errors.New("Password hash must be provided")
 )
 
 func ValidateUsername(username string) error {
+	if len(username) < 2 {
+		return errors.New("Username is too short")
+	}
+	if len(username) > 20 {
+		return errors.New("Username is too long")
+	}
 	if !usernameRegex.MatchString(username) {
 		return ErrInvalidUsername
 	}
@@ -24,6 +36,9 @@ func ValidateUsername(username string) error {
 }
 
 func ValidatePassword(password string) error {
+	if len(password) < passwordMinLength {
+		return errors.New("Password is too short")
+	}
 	if !passwordRegex.MatchString(password) {
 		return ErrInvalidPassword
 	}
@@ -33,6 +48,14 @@ func ValidatePassword(password string) error {
 func ValidatePasswordHash(passwordHash string) error {
 	if len(passwordHash) < 1 {
 		return ErrNoPasswordHash
+	}
+	return nil
+}
+
+func ValidateUserRole(role string) error {
+	roles := []string{"admin", "user"}
+	if !slices.Contains(roles, role) {
+		return fmt.Errorf("Unknown role specified: %s", role)
 	}
 	return nil
 }
