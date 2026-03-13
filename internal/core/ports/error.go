@@ -58,6 +58,14 @@ func BadRequestError(err error) error {
 	return NewError(ErrBadRequest, err)
 }
 
+func UnauthorizedError(err error) error {
+	return NewError(ErrUnauthorized, err)
+}
+
+func ForbiddenError(err error) error {
+	return NewError(ErrForbidden, err)
+}
+
 func NewValidationError(problems map[string]string) error {
 	return NewError(ErrValidationError, ValidationError(problems))
 }
