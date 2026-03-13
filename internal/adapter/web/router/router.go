@@ -18,6 +18,21 @@ type RouterOptions struct {
 func Router(opts RouterOptions) http.Handler {
 	router := http.NewServeMux()
 
+	router.Handle("/api/v1/", http.StripPrefix("/api/v1", newV1Router(opts)))
+
+	handler := http.Handler(router)
+	//handler = middleware.Authenticated(handler)
+	handler = middleware.NoCache(handler)
+	handler = middleware.Logger(handler)
+	handler = middleware.RealIP(handler)
+	handler = middleware.RequestID(handler)
+	//handler = middleware.Recovery(handler)
+
+	return handler
+}
+
+func newV1Router(opts RouterOptions) http.Handler {
+	router := http.NewServeMux()
 	router.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		var id string
 		opts.DB.QueryRowContext(r.Context(), "SELECT gen_random_uuid();").Scan(&id)
@@ -30,17 +45,7 @@ func Router(opts RouterOptions) http.Handler {
 			w.Write([]byte("you authenticated"))
 		})),
 	)
-
 	router.Handle("POST /login", handlers.Login(opts.UserService).Unwrap())
 	router.Handle("POST /signup", handlers.CreateUser(opts.UserService).Unwrap())
-
-	handler := http.Handler(router)
-	//handler = middleware.Authenticated(handler)
-	handler = middleware.NoCache(handler)
-	handler = middleware.Logger(handler)
-	handler = middleware.RealIP(handler)
-	handler = middleware.RequestID(handler)
-	//handler = middleware.Recovery(handler)
-
-	return handler
+	return router
 }
