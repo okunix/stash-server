@@ -56,3 +56,10 @@ func ValidateMasterKeySalt(salt string) error {
 	}
 	return nil
 }
+
+func ValidateMasterKey(key string) error {
+	if len(key) < 10 {
+		return errors.New("Master key is too short")
+	}
+	return nil
+}
