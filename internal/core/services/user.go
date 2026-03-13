@@ -27,37 +27,12 @@ func NewUserService(params UserServiceParams) ports.UserService {
 	}
 }
 
-func (u *userService) hashPassword(password string) (string, error) {
-	hashFunc, err := crypto.NewArgon2ID()
-	if err != nil {
-		return "", err
-	}
-	hash, err := hashFunc.DeriveKey([]byte(password))
-	if err != nil {
-		return "", err
-	}
-	passwordHash := hash.String()
-	return passwordHash, nil
-}
-
-func (u *userService) comparePasswordHash(hash, password string) (bool, error) {
-	kdf, existingHash, err := crypto.NewArgon2IDFromString(hash)
-	if err != nil {
-		return false, err
-	}
-	passwordHash, err := kdf.DeriveKey([]byte(password))
-	if err != nil {
-		return false, err
-	}
-	return kdf.Compare(existingHash, passwordHash.Bytes()), nil
-}
-
 func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) error {
 	if problems, ok := req.Validate(); !ok {
 		return ports.NewValidationError(problems)
 	}
 
-	passwordHash, err := u.hashPassword(req.Password)
+	passwordHash, err := crypto.HashPassword(req.Password)
 	if err != nil {
 		slog.Error("password hash failed", "error", err.Error())
 		return ports.InternalError(err)
@@ -94,7 +69,7 @@ func (u *userService) GetUserToken(
 		return "", ports.BadRequestError(errors.New("invalid credentials"))
 	}
 
-	ok, _ := u.comparePasswordHash(user.PasswordHash, req.Password)
+	ok, _ := crypto.ComparePasswordHash(user.PasswordHash, req.Password)
 	if !ok {
 		return "", ports.BadRequestError(errors.New("invalid credentials"))
 	}
