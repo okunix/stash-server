@@ -2,8 +2,10 @@ package jsonutil
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 )
 
 func Write(w http.ResponseWriter, code int, data any) error {
@@ -33,6 +35,11 @@ func NewMessage(code int, message string, detail ...any) Message {
 }
 
 func SendMessage(w http.ResponseWriter, m Message) error {
+	fmt.Printf("Detail type: %v\n", reflect.TypeOf(m.Detail))
+	fmt.Printf("Detail value: %v\n", m.Detail)
+
+	b, err := json.Marshal(m.Detail)
+	fmt.Printf("Detail alone: %s, err: %v\n", b, err)
 	return Write(w, m.Code, m)
 }
 
@@ -49,6 +56,16 @@ var (
 )
 
 func WithDetail(m Message, detail any) Message {
-	m.Detail = detail
+	var d any
+	if err, ok := detail.(error); ok {
+		raw := err.Error()
+		var parsed any
+		if json.Unmarshal([]byte(raw), &parsed) == nil {
+			d = parsed
+		} else {
+			d = raw
+		}
+	}
+	m.Detail = d
 	return m
 }

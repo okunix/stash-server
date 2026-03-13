@@ -39,20 +39,21 @@ func (f apiFunc) Unwrap() http.Handler {
 func fromServiceError(err error) (jsonutil.Message, bool) {
 	var svcErr ports.Error
 	if errors.As(err, &svcErr) {
-		message := jsonutil.WithDetail(jsonutil.InternalServerError, svcErr.AppError())
+		appErr := svcErr.AppError()
+		message := jsonutil.WithDetail(jsonutil.InternalServerError, appErr)
 		switch svcErr.ServiceError() {
 		case ports.ErrBadRequest:
-			message = jsonutil.WithDetail(jsonutil.BadRequest, svcErr.AppError())
+			message = jsonutil.WithDetail(jsonutil.BadRequest, appErr)
 		case ports.ErrValidationError:
-			message = jsonutil.WithDetail(jsonutil.ValidationError, svcErr.AppError())
+			message = jsonutil.WithDetail(jsonutil.ValidationError, appErr)
 		case ports.ErrNotFound:
-			message = jsonutil.WithDetail(jsonutil.NotFound, svcErr.AppError())
+			message = jsonutil.WithDetail(jsonutil.NotFound, appErr)
 		case ports.ErrUnauthorized:
-			message = jsonutil.WithDetail(jsonutil.Unauthorized, svcErr.AppError())
+			message = jsonutil.WithDetail(jsonutil.Unauthorized, appErr)
 		case ports.ErrForbidden:
-			message = jsonutil.WithDetail(jsonutil.Forbidden, svcErr.AppError())
+			message = jsonutil.WithDetail(jsonutil.Forbidden, appErr)
 		case ports.ErrInternalError:
-			message = jsonutil.WithDetail(jsonutil.InternalServerError, svcErr.AppError())
+			message = jsonutil.WithDetail(jsonutil.InternalServerError, appErr)
 		}
 		return message, true
 	}
