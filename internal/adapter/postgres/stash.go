@@ -133,7 +133,7 @@ func (s *stashRepository) DeleteStash(ctx context.Context, stashID uuid.UUID) er
 }
 
 const updateStashStmt = `
-UPDATE stashes SET name = ?, description = ? WHERE id = ? RETURNING id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at;
+UPDATE stashes SET name = $1, description = $2 WHERE id = $3 RETURNING id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at;
 `
 
 func (s *stashRepository) UpdateStash(
@@ -148,7 +148,7 @@ func (s *stashRepository) UpdateStash(
 }
 
 const getStashByIDStmt = `
-SELECT id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at FROM stashes WHERE id = ?;
+SELECT id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at FROM stashes WHERE id = $1;
 `
 
 func (s *stashRepository) GetStashByID(ctx context.Context, id uuid.UUID) (*stash.Stash, error) {
@@ -157,8 +157,8 @@ func (s *stashRepository) GetStashByID(ctx context.Context, id uuid.UUID) (*stas
 }
 
 const (
-	getTotalStashesStmt = `SELECT COUNT(*) FROM stashes WHERE maintainer_id = ?;`
-	listStashesStmt     = `SELECT id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at FROM stashes WHERE maintainer_id = ? LIMIT ? OFFSET ?;`
+	getTotalStashesStmt = `SELECT COUNT(*) FROM stashes WHERE maintainer_id = $1;`
+	listStashesStmt     = `SELECT id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at FROM stashes WHERE maintainer_id = $1 LIMIT $2 OFFSET $3;`
 )
 
 func (s *stashRepository) ListStashes(

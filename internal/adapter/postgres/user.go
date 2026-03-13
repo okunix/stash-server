@@ -77,7 +77,7 @@ func (u *userRepository) AddUser(
 }
 
 const deleteUserStmt = `
-DELETE FROM users WHERE id = ?;
+DELETE FROM users WHERE id = $1;
 `
 
 func (u *userRepository) DeleteUser(
