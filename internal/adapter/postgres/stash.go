@@ -201,3 +201,65 @@ func (s *stashRepository) ListStashes(
 	tx.Commit()
 	return stashes, count, nil
 }
+
+const (
+	getStashMembersSQL = `
+		SELECT u.id, u.username, m.created_at FROM stash_member m INNER JOIN users u ON u.id = m.user_id WHERE m.stash_id = $1;
+	`
+)
+
+func (s *stashRepository) GetStashMembers(
+	ctx context.Context,
+	stashID uuid.UUID,
+) ([]*stash.StashMember, error) {
+	members := make([]*stash.StashMember, 0)
+	rows, err := s.db.QueryContext(ctx, getStashMembersSQL, stashID)
+	if err != nil {
+		return members, err
+	}
+	for rows.Next() {
+		var member stash.StashMember
+		rows.Scan(&member.UserID, &member.Username, &member.Since)
+		members = append(members, &member)
+	}
+	return members, nil
+}
+
+const (
+	isStashMemberOrMaintainerSQL = "select exists (select 1 from stashes s where s.id = $1 and (s.maintainer_id = $2 or (select exists (select 1 from stash_member m where m.stash_id = $1 and m.user_id = $2))));"
+)
+
+func (s *stashRepository) IsStashMemberOrMaintainer(
+	ctx context.Context,
+	userID, stashID uuid.UUID,
+) (bool, error) {
+	ok := false
+	err := s.db.QueryRowContext(ctx, isStashMemberOrMaintainerSQL, stashID, userID).Scan(&ok)
+	return ok, err
+}
+
+const (
+	isStashMemberSQL = `select exists (select 1 from stash_member where stash_id = $1 and user_id = $2);`
+)
+
+func (s *stashRepository) IsStashMember(
+	ctx context.Context,
+	userID, stashID uuid.UUID,
+) (bool, error) {
+	ok := false
+	err := s.db.QueryRowContext(ctx, isStashMemberSQL, stashID, userID).Scan(&ok)
+	return ok, err
+}
+
+const (
+	isStashMaintainerSQL = `select exists (select 1 from stashes where maintainer_id = $2 and id = $1);`
+)
+
+func (s *stashRepository) IsStashMaintainer(
+	ctx context.Context,
+	userID, stashID uuid.UUID,
+) (bool, error) {
+	ok := false
+	err := s.db.QueryRowContext(ctx, isStashMaintainerSQL, stashID, userID).Scan(&ok)
+	return ok, err
+}

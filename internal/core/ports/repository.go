@@ -42,6 +42,10 @@ type StashRepository interface {
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error
 	AddMember(ctx context.Context, params stash.AddMemberParams) error
 	CommitData(ctx context.Context, params stash.CommitDataParams) error
+	GetStashMembers(ctx context.Context, stashID uuid.UUID) ([]*stash.StashMember, error)
+	IsStashMember(ctx context.Context, userID, stashID uuid.UUID) (bool, error)
+	IsStashMaintainer(ctx context.Context, userID, stashID uuid.UUID) (bool, error)
+	IsStashMemberOrMaintainer(ctx context.Context, userID, stashID uuid.UUID) (bool, error)
 }
 
 type UserRepository interface {
