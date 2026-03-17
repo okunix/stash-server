@@ -11,8 +11,9 @@ import (
 )
 
 type RouterOptions struct {
-	DB          *sql.DB
-	UserService ports.UserService
+	DB           *sql.DB
+	UserService  ports.UserService
+	StashService ports.StashService
 }
 
 func Router(opts RouterOptions) http.Handler {
@@ -21,7 +22,6 @@ func Router(opts RouterOptions) http.Handler {
 	router.Handle("/api/v1/", http.StripPrefix("/api/v1", newV1Router(opts)))
 
 	handler := http.Handler(router)
-	//handler = middleware.Authenticated(handler)
 	handler = middleware.NoCache(handler)
 	handler = middleware.Logger(handler)
 	handler = middleware.RealIP(handler)
@@ -39,13 +39,20 @@ func newV1Router(opts RouterOptions) http.Handler {
 		fmt.Fprintf(w, "%s\n", id)
 	})
 
-	router.Handle(
-		"GET /authcheck",
-		middleware.Authenticated(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("you authenticated"))
-		})),
-	)
 	router.Handle("POST /login", handlers.Login(opts.UserService).Unwrap())
 	router.Handle("POST /signup", handlers.CreateUser(opts.UserService).Unwrap())
+
+	router.Handle(
+		"POST /stashes",
+		middleware.Authenticated(handlers.CreateStash(opts.StashService).Unwrap()),
+	)
+	router.Handle(
+		"DELETE /stashes/{id}",
+		middleware.Authenticated(handlers.DeleteStash(opts.StashService).Unwrap()),
+	)
+	router.Handle(
+		"GET /stashes/{id}",
+		middleware.Authenticated(handlers.GetStashByID(opts.StashService).Unwrap()),
+	)
 	return router
 }

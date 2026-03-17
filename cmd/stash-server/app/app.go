@@ -63,11 +63,20 @@ func Run(configFilePath string) {
 		},
 	)
 
+	// initializing stash service instance
+	stashRepository := postgres.NewStashRepository(postgres.Postgres())
+	stashService := services.NewStashService(
+		services.StashServiceParams{
+			StashRepository: stashRepository,
+		},
+	)
+
 	// running http server
 	serverOptions := web.ServerOptions{
-		Addr:        conf.Addr,
-		DB:          postgres.Postgres(),
-		UserService: userService,
+		Addr:         conf.Addr,
+		DB:           postgres.Postgres(),
+		UserService:  userService,
+		StashService: stashService,
 	}
 	server := web.NewServer(serverOptions)
 	go func() {

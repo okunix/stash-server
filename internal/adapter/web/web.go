@@ -9,13 +9,20 @@ import (
 )
 
 type ServerOptions struct {
-	Addr        string
-	DB          *sql.DB
-	UserService ports.UserService
+	Addr         string
+	DB           *sql.DB
+	UserService  ports.UserService
+	StashService ports.StashService
 }
 
 func NewServer(opts ServerOptions) *http.Server {
-	handler := router.Router(router.RouterOptions{DB: opts.DB, UserService: opts.UserService})
+	handler := router.Router(
+		router.RouterOptions{
+			DB:           opts.DB,
+			UserService:  opts.UserService,
+			StashService: opts.StashService,
+		},
+	)
 	return &http.Server{
 		Addr:           opts.Addr,
 		MaxHeaderBytes: 1 << 20,

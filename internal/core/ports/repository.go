@@ -41,6 +41,7 @@ type StashRepository interface {
 	UpdateStash(ctx context.Context, params stash.UpdateStashParams) (*stash.Stash, error)
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error
 	AddMember(ctx context.Context, params stash.AddMemberParams) error
+	RemoveMember(ctx context.Context, params stash.RemoveMemberParams) error
 	CommitData(ctx context.Context, params stash.CommitDataParams) error
 	GetStashMembers(ctx context.Context, stashID uuid.UUID) ([]*stash.StashMember, error)
 	IsStashMember(ctx context.Context, userID, stashID uuid.UUID) (bool, error)

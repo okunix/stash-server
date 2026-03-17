@@ -10,24 +10,21 @@ import (
 // current user information is transfered using context
 
 type StashService interface {
-	ListStashes(ctx context.Context, req dto.ListStashesRequest) ([]*dto.StashResponse, error)
+	ListStashes(ctx context.Context, req dto.ListStashesRequest) (*dto.ListStashResponse, error)
 	GetStashByID(ctx context.Context, stashID uuid.UUID) (*dto.StashResponse, error)
 	CreateStash(ctx context.Context, req dto.CreateStashRequest) error
 	UpdateStash(ctx context.Context, req dto.UpdateStashRequest) error
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error
 
 	ListStashMembers(ctx context.Context, stashID uuid.UUID) (*dto.ListStashMemberResponse, error)
-	CheckStashMember(ctx context.Context, stashID uuid.UUID, userID uuid.UUID) (bool, error)
 	AddStashMember(ctx context.Context, req dto.AddStashMemberRequest) error
 	RemoveStashMember(ctx context.Context, req dto.RemoveStashMemberRequest) error
-}
 
-type SecretService interface {
-	GetSecret(ctx context.Context, stashID uuid.UUID) (*dto.SecretResponse, error)
-	GetSecretEntry(ctx context.Context, stashID uuid.UUID, entryKey string) (string, error)
+	GetSecrets(ctx context.Context, stashID uuid.UUID) (*dto.SecretResponse, error)
+	GetSecretsEntry(ctx context.Context, stashID uuid.UUID, entryKey string) (string, error)
 	ListUnlockedSecrets(ctx context.Context) ([]*dto.SecretResponse, error)
 
-	Unlock(ctx context.Context, stashID uuid.UUID) error
+	Unlock(ctx context.Context, stashID uuid.UUID, password string) error
 	Lock(ctx context.Context, stashID uuid.UUID) error
 }
 

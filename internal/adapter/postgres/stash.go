@@ -235,7 +235,10 @@ func (s *stashRepository) IsStashMemberOrMaintainer(
 ) (bool, error) {
 	ok := false
 	err := s.db.QueryRowContext(ctx, isStashMemberOrMaintainerSQL, stashID, userID).Scan(&ok)
-	return ok, err
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
 }
 
 const (
@@ -248,7 +251,10 @@ func (s *stashRepository) IsStashMember(
 ) (bool, error) {
 	ok := false
 	err := s.db.QueryRowContext(ctx, isStashMemberSQL, stashID, userID).Scan(&ok)
-	return ok, err
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
 }
 
 const (
@@ -261,5 +267,24 @@ func (s *stashRepository) IsStashMaintainer(
 ) (bool, error) {
 	ok := false
 	err := s.db.QueryRowContext(ctx, isStashMaintainerSQL, stashID, userID).Scan(&ok)
-	return ok, err
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
+}
+
+const (
+	removeMemberSQL = `delete from stash_member where stash_id = $1 and user_id = $2;`
+)
+
+func (s *stashRepository) RemoveMember(ctx context.Context, params stash.RemoveMemberParams) error {
+	res, err := s.db.ExecContext(ctx, removeMemberSQL, params.StashID, params.UserID)
+	if err != nil {
+		return err
+	}
+	rows, _ := res.RowsAffected()
+	if rows < 1 {
+		return errors.New("member not found")
+	}
+	return nil
 }

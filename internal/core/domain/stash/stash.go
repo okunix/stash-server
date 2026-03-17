@@ -46,3 +46,14 @@ type AddMemberParams struct {
 	UserID  uuid.UUID
 	StashID uuid.UUID
 }
+
+type RemoveMemberParams struct {
+	UserID  uuid.UUID
+	StashID uuid.UUID
+}
+
+type StashMember struct {
+	Username string    `json:"username"`
+	UserID   uuid.UUID `json:"userID"`
+	Since    time.Time `json:"since"`
+}

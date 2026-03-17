@@ -26,8 +26,8 @@ func (s *secretRepository) GetSecretByStashID(
 	if !ok {
 		return nil, errors.New("secret not found")
 	}
-	secretData := st.(secret.Secret)
-	return &secretData, nil
+	secretData := st.(*secret.Secret)
+	return secretData, nil
 }
 
 func (s *secretRepository) AddSecret(ctx context.Context, params secret.AddSecretParams) error {
@@ -36,7 +36,7 @@ func (s *secretRepository) AddSecret(ctx context.Context, params secret.AddSecre
 		Data:       params.Data,
 		UnlockedAt: time.Now(),
 	}
-	s.cache.Set(params.StashID.String(), newSecret)
+	s.cache.Set(params.StashID.String(), &newSecret)
 	return nil
 }
 

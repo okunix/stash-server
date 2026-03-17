@@ -10,9 +10,21 @@ import (
 type StashResponse struct {
 	ID           uuid.UUID `json:"id"`
 	Name         string    `json:"name"`
-	Description  *string   `json:"desc"`
+	Description  *string   `json:"desc,omitempty"`
 	MaintainerID uuid.UUID `json:"maintainer_id"`
 	CreatedAt    time.Time `json:"created_at"`
+	Locked       bool      `json:"locked"`
+}
+
+func NewStashResponse(s *stash.Stash, locked bool) *StashResponse {
+	return &StashResponse{
+		ID:           s.ID,
+		Name:         s.Name,
+		Description:  s.Description,
+		MaintainerID: s.MaintainerID,
+		CreatedAt:    s.CreatedAt,
+		Locked:       locked,
+	}
 }
 
 type ListStashResponse struct {

@@ -61,7 +61,7 @@ func (u *userService) GetUserToken(
 	ctx context.Context,
 	req dto.GetUserTokenRequest,
 ) (string, error) {
-	slog.Info("retriving jwt token for user", "username", req.Username)
+	slog.Info("retriving jwt token", "username", req.Username)
 
 	user, err := u.userRepo.GetUserByUsername(ctx, req.Username)
 	if err != nil {
@@ -74,7 +74,7 @@ func (u *userService) GetUserToken(
 		return "", ports.BadRequestError(errors.New("invalid credentials"))
 	}
 
-	slog.Info("generating jwt for user", "user_id", user.ID, "username", user.Username)
+	slog.Info("generating jwt", "user_id", user.ID, "username", user.Username)
 	token, err := auth.JWT(user.ID, user.Username, user.Role)
 	if err != nil {
 		return "", ports.InternalError(err)
