@@ -29,9 +29,11 @@ type AccessLogRepository interface {
 }
 
 type SecretRepository interface {
-	AddSecret(ctx context.Context, params secret.AddSecretParams) error
-	RemoveSecretByStashID(ctx context.Context, stashID uuid.UUID) error
+	AddSecret(ctx context.Context, params secret.AddSecretParams) (*secret.Secret, error)
+	RemoveSecretByStashID(ctx context.Context, stashID uuid.UUID) (*secret.Secret, error)
 	GetSecretByStashID(ctx context.Context, stashID uuid.UUID) (*secret.Secret, error)
+	ListSecrets(ctx context.Context, maintainerID uuid.UUID) ([]*secret.Secret, error)
+	UpdateSecret(ctx context.Context, stashID uuid.UUID, sec *secret.Secret) error
 }
 
 type StashRepository interface {

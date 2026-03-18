@@ -33,34 +33,40 @@ func NewStashService(params StashServiceParams) ports.StashService {
 	}
 }
 
-func (s *stashService) isStashMaintainer(ctx context.Context, stashID uuid.UUID) error {
+func (s *stashService) isStashMaintainer(
+	ctx context.Context,
+	stashID uuid.UUID,
+) (*auth.CurrentUser, error) {
 	currentUser, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return ports.UnauthorizedError(nil)
+		return currentUser, ports.UnauthorizedError(nil)
 	}
 
 	ok, err := s.stashRepo.IsStashMember(ctx, currentUser.UserID, stashID)
 	if err != nil {
-		return ports.InternalError(err)
+		return currentUser, ports.InternalError(err)
 	}
 	if !ok {
-		return ports.ForbiddenError(errors.New("you are not stash maintainer"))
+		return currentUser, ports.ForbiddenError(errors.New("you are not stash maintainer"))
 	}
 
-	return nil
+	return currentUser, nil
 }
 
-func (s *stashService) isStashMemberOrMaintainer(ctx context.Context, stashID uuid.UUID) error {
+func (s *stashService) isStashMemberOrMaintainer(
+	ctx context.Context,
+	stashID uuid.UUID,
+) (*auth.CurrentUser, error) {
 	currentUser, ok := auth.UserFromContext(ctx)
 	if !ok {
-		return ports.UnauthorizedError(nil)
+		return currentUser, ports.UnauthorizedError(nil)
 	}
 
 	_, err := s.stashRepo.IsStashMemberOrMaintainer(ctx, currentUser.UserID, stashID)
 	if err != nil {
-		return ports.ForbiddenError(errors.New("you are not stash member"))
+		return currentUser, ports.ForbiddenError(errors.New("you are not stash member"))
 	}
-	return nil
+	return currentUser, nil
 }
 
 func (s *stashService) getStashByID(ctx context.Context, stashID uuid.UUID) (*stash.Stash, error) {
@@ -121,7 +127,7 @@ func (s *stashService) AddStashMember(
 	ctx context.Context,
 	req dto.AddStashMemberRequest,
 ) error {
-	if err := s.isStashMaintainer(ctx, req.StashID); err != nil {
+	if _, err := s.isStashMaintainer(ctx, req.StashID); err != nil {
 		return err
 	}
 	params := stash.AddMemberParams{UserID: req.UserID, StashID: req.StashID}
@@ -135,7 +141,7 @@ func (s *stashService) RemoveStashMember(
 	ctx context.Context,
 	req dto.RemoveStashMemberRequest,
 ) error {
-	if err := s.isStashMaintainer(ctx, req.StashID); err != nil {
+	if _, err := s.isStashMaintainer(ctx, req.StashID); err != nil {
 		return err
 	}
 	params := stash.RemoveMemberParams{UserID: req.UserID, StashID: req.StashID}
@@ -177,7 +183,7 @@ func (s *stashService) CreateStash(ctx context.Context, req dto.CreateStashReque
 }
 
 func (s *stashService) DeleteStash(ctx context.Context, stashID uuid.UUID) error {
-	if err := s.isStashMaintainer(ctx, stashID); err != nil {
+	if _, err := s.isStashMaintainer(ctx, stashID); err != nil {
 		return err
 	}
 	if err := s.stashRepo.DeleteStash(ctx, stashID); err != nil {
@@ -202,7 +208,7 @@ func (s *stashService) ListStashMembers(
 	ctx context.Context,
 	stashID uuid.UUID,
 ) (*dto.ListStashMemberResponse, error) {
-	if err := s.isStashMemberOrMaintainer(ctx, stashID); err != nil {
+	if _, err := s.isStashMemberOrMaintainer(ctx, stashID); err != nil {
 		return nil, err
 	}
 
@@ -228,10 +234,15 @@ func (s *stashService) ListStashes(
 	ctx context.Context,
 	req dto.ListStashesRequest,
 ) (*dto.ListStashResponse, error) {
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return new(dto.ListStashResponse), ports.UnauthorizedError(nil)
+	}
 	params := stash.ListStashesParams{
-		Limit:  req.Limit,
-		Offset: req.Offset,
-		Search: req.Search,
+		Limit:        req.Limit,
+		Offset:       req.Offset,
+		Search:       req.Search,
+		MaintainerID: currentUser.UserID,
 	}
 	stashes, total, err := s.stashRepo.ListStashes(ctx, params)
 	if err != nil {
@@ -246,7 +257,11 @@ func (s *stashService) ListStashes(
 		Result: []dto.StashResponse{},
 	}
 	for _, v := range stashes {
-		resp.Result = append(resp.Result, *dto.NewStashResponse(v, false))
+		_, err = s.secretRepo.GetSecretByStashID(ctx, v.ID)
+		resp.Result = append(
+			resp.Result,
+			*dto.NewStashResponse(v, err != nil),
+		)
 	}
 	return resp, nil
 }
@@ -259,7 +274,7 @@ func (s *stashService) GetSecrets(
 	ctx context.Context,
 	stashID uuid.UUID,
 ) (*dto.SecretResponse, error) {
-	if err := s.isStashMemberOrMaintainer(ctx, stashID); err != nil {
+	if _, err := s.isStashMemberOrMaintainer(ctx, stashID); err != nil {
 		return nil, err
 	}
 	secret, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
@@ -278,11 +293,66 @@ func (s *stashService) GetSecretsEntry(
 	stashID uuid.UUID,
 	entryKey string,
 ) (string, error) {
-	panic("unimplemented")
+	if _, err := s.isStashMemberOrMaintainer(ctx, stashID); err != nil {
+		return "", err
+	}
+	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
+	if err != nil {
+		return "", ports.NotFoundError(err)
+	}
+	entry, ok := sec.GetEntry(entryKey)
+	if !ok {
+		return "", ports.NotFoundError(errors.New("secrets entry not found"))
+	}
+	return entry, nil
 }
 
-func (s *stashService) ListUnlockedSecrets(ctx context.Context) ([]*dto.SecretResponse, error) {
-	panic("unimplemented")
+func (s *stashService) AddSecretsEntry(
+	ctx context.Context,
+	stashID uuid.UUID,
+	entryKey, value string,
+) error {
+	_, err := s.isStashMaintainer(ctx, stashID)
+	if err != nil {
+		return err
+	}
+	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
+	if err != nil {
+		return ports.NotFoundError(err)
+	}
+	sec.AddEntry(entryKey, value)
+	err = s.secretRepo.UpdateSecret(ctx, stashID, sec)
+	if err != nil {
+		return ports.InternalError(err)
+	}
+	go s.commitDataUpdate(context.Background(), stashID, sec)
+	return nil
+}
+
+func (s *stashService) RemoveSecretsEntry(
+	ctx context.Context,
+	stashID uuid.UUID,
+	entryKey string,
+) error {
+	_, err := s.isStashMaintainer(ctx, stashID)
+	if err != nil {
+		return err
+	}
+	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
+	if err != nil {
+		return ports.NotFoundError(err)
+	}
+	sec.RemoveEntry(entryKey)
+	err = s.secretRepo.UpdateSecret(ctx, stashID, sec)
+	if err != nil {
+		return ports.InternalError(err)
+	}
+	go s.commitDataUpdate(context.Background(), stashID, sec)
+	return nil
+}
+
+func (s *stashService) ListUnlockedSecrets(ctx context.Context) ([]*dto.StashResponse, error) {
+	return nil, nil
 }
 
 func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password string) error {
@@ -312,14 +382,14 @@ func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password s
 		MasterKey:    key.Bytes(),
 		Data:         data,
 	}
-	if err := s.secretRepo.AddSecret(ctx, params); err != nil {
+	if _, err := s.secretRepo.AddSecret(ctx, params); err != nil {
 		return ports.InternalError(err)
 	}
 	return nil
 }
 
 func (s *stashService) Lock(ctx context.Context, stashID uuid.UUID) error {
-	if err := s.isStashMaintainer(ctx, stashID); err != nil {
+	if _, err := s.isStashMaintainer(ctx, stashID); err != nil {
 		return err
 	}
 
@@ -342,8 +412,29 @@ func (s *stashService) Lock(ctx context.Context, stashID uuid.UUID) error {
 		return ports.InternalError(err)
 	}
 
-	if err := s.secretRepo.RemoveSecretByStashID(ctx, stashID); err != nil {
+	if _, err := s.secretRepo.RemoveSecretByStashID(ctx, stashID); err != nil {
 		return ports.BadRequestError(err)
+	}
+	return nil
+}
+
+func (s *stashService) commitDataUpdate(
+	ctx context.Context,
+	stashID uuid.UUID,
+	sec *secret.Secret,
+) error {
+	cipher := crypto.AESGCM()
+	dataBytes, err := sec.Seal(cipher)
+	if err != nil {
+		return ports.InternalError(errors.New("secrets seal failed"))
+	}
+	params := stash.CommitDataParams{
+		StashID: stashID,
+		Data:    base64.RawStdEncoding.EncodeToString(dataBytes),
+	}
+	err = s.stashRepo.CommitData(ctx, params)
+	if err != nil {
+		return ports.InternalError(err)
 	}
 	return nil
 }

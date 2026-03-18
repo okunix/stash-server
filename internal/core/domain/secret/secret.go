@@ -11,10 +11,11 @@ import (
 
 // in-memory data structure
 type Secret struct {
-	mu         sync.RWMutex
-	MasterKey  []byte            `json:"master_key"`
-	Data       map[string]string `json:"data"`
-	UnlockedAt time.Time         `json:"unlocked_at"`
+	mu           sync.RWMutex
+	MasterKey    []byte            `json:"master_key"`
+	Data         map[string]string `json:"data"`
+	MaintainerID uuid.UUID         `json:"maintainer_id"`
+	UnlockedAt   time.Time         `json:"unlocked_at"`
 }
 
 type AddSecretParams struct {
@@ -55,8 +56,9 @@ func (s *Secret) RemoveEntry(key string) {
 	delete(s.Data, key)
 }
 
-func (s *Secret) GetEntry(key string) string {
+func (s *Secret) GetEntry(key string) (string, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.Data[key]
+	entry, ok := s.Data[key]
+	return entry, ok
 }
