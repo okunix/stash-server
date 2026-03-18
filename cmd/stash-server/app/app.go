@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"gitlab.com/stash-password-manager/stash-server/cmd/stash-server/config"
+	"gitlab.com/stash-password-manager/stash-server/internal/adapter/cache"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/postgres"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/services"
@@ -63,11 +64,25 @@ func Run(configFilePath string) {
 		},
 	)
 
+	// initializing cache storage
+	ephemeralStashStorage, err := cache.NewCache(5)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize cache storage: %s\n", err.Error())
+		os.Exit(1)
+	}
+	ephemeralUserIndex, err := cache.NewCache(5)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize cache storage: %s\n", err.Error())
+		os.Exit(1)
+	}
+
 	// initializing stash service instance
 	stashRepository := postgres.NewStashRepository(postgres.Postgres())
+	secretRepository := cache.NewSecretRepository(ephemeralStashStorage, ephemeralUserIndex)
 	stashService := services.NewStashService(
 		services.StashServiceParams{
-			StashRepository: stashRepository,
+			StashRepository:  stashRepository,
+			SecretRepository: secretRepository,
 		},
 	)
 

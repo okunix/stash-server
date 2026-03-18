@@ -77,7 +77,7 @@ func (s *stashService) getStashByID(ctx context.Context, stashID uuid.UUID) (*st
 	return st, nil
 }
 
-func (s *stashService) getStashIfMemberOfMaintainer(
+func (s *stashService) getStashIfMemberOrMaintainer(
 	ctx context.Context,
 	stashID uuid.UUID,
 ) (*stash.Stash, error) {
@@ -86,9 +86,9 @@ func (s *stashService) getStashIfMemberOfMaintainer(
 		return nil, ports.UnauthorizedError(nil)
 	}
 
-	_, err := s.stashRepo.IsStashMemberOrMaintainer(ctx, currentUser.UserID, stashID)
-	if err != nil {
-		return nil, ports.ForbiddenError(errors.New("you are not stash member"))
+	ok, _ = s.stashRepo.IsStashMemberOrMaintainer(ctx, currentUser.UserID, stashID)
+	if !ok {
+		return nil, ports.ForbiddenError(errors.New("you are not a member of this stash"))
 	}
 
 	st, err := s.getStashByID(ctx, stashID)
@@ -196,7 +196,7 @@ func (s *stashService) GetStashByID(
 	ctx context.Context,
 	stashID uuid.UUID,
 ) (*dto.StashResponse, error) {
-	st, err := s.getStashIfMemberOfMaintainer(ctx, stashID)
+	st, err := s.getStashIfMemberOrMaintainer(ctx, stashID)
 	if err != nil {
 		return nil, err
 	}

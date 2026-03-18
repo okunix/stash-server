@@ -43,16 +43,20 @@ func newV1Router(opts RouterOptions) http.Handler {
 	router.Handle("POST /signup", handlers.CreateUser(opts.UserService).Unwrap())
 
 	router.Handle(
+		"GET /stashes",
+		middleware.Authenticated(handlers.ListStashes(opts.StashService).Unwrap()),
+	)
+	router.Handle(
 		"POST /stashes",
 		middleware.Authenticated(handlers.CreateStash(opts.StashService).Unwrap()),
 	)
 	router.Handle(
-		"DELETE /stashes/{id}",
-		middleware.Authenticated(handlers.DeleteStash(opts.StashService).Unwrap()),
+		"GET /stashes/{stash_id}",
+		middleware.Authenticated(handlers.GetStashByID(opts.StashService).Unwrap()),
 	)
 	router.Handle(
-		"GET /stashes/{id}",
-		middleware.Authenticated(handlers.GetStashByID(opts.StashService).Unwrap()),
+		"DELETE /stashes/{stash_id}",
+		middleware.Authenticated(handlers.DeleteStash(opts.StashService).Unwrap()),
 	)
 	return router
 }
