@@ -27,8 +27,8 @@ func CreateStash(stashService ports.StashService) apiFunc {
 func DeleteStash(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
-		stashID := r.PathValue("id")
 
+		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
 			return ports.BadRequestError(err)
@@ -75,5 +75,45 @@ func ListStashes(stashService ports.StashService) apiFunc {
 			return err
 		}
 		return jsonutil.Write(w, http.StatusOK, res)
+	}
+}
+
+func LockStash(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		if err := stashService.Lock(ctx, stashUUID); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Ok)
+	}
+}
+
+func UnlockStash(stashService ports.StashService) apiFunc {
+	type request struct {
+		Password string `json:"password"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		req, err := jsonutil.Read[request](r.Body)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		if err := stashService.Unlock(ctx, stashUUID, req.Password); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Ok)
 	}
 }

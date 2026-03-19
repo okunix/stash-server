@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
@@ -42,7 +41,7 @@ func (s *stashService) isStashMaintainer(
 		return currentUser, ports.UnauthorizedError(nil)
 	}
 
-	ok, err := s.stashRepo.IsStashMember(ctx, currentUser.UserID, stashID)
+	ok, err := s.stashRepo.IsStashMaintainer(ctx, currentUser.UserID, stashID)
 	if err != nil {
 		return currentUser, ports.InternalError(err)
 	}
@@ -361,17 +360,20 @@ func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password s
 		return err
 	}
 
-	kdf, _ := crypto.NewArgon2ID()
+	kdf, _, _ := crypto.NewArgon2IDFromString(st.MasterKeyHash)
 	key, err := kdf.DeriveKey([]byte(password))
 	if err != nil {
 		return ports.InternalError(err)
 	}
 	cipher := crypto.AESGCM()
-	plaintext, err := cipher.Decrypt(key.Bytes(), []byte(st.EncryptedData))
+	encryptedData, err := base64.RawStdEncoding.DecodeString(st.EncryptedData)
 	if err != nil {
 		return ports.InternalError(err)
 	}
-	fmt.Printf("plaintext: %v\n", plaintext)
+	plaintext, err := cipher.Decrypt(key.Bytes(), encryptedData)
+	if err != nil {
+		return ports.InternalError(err)
+	}
 	var data map[string]string
 	if err := json.Unmarshal(plaintext, &data); err != nil {
 		return ports.InternalError(err)
@@ -395,7 +397,7 @@ func (s *stashService) Lock(ctx context.Context, stashID uuid.UUID) error {
 
 	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
 	if err != nil {
-		return ports.BadRequestError(err)
+		return ports.NotFoundError(err)
 	}
 
 	cipher := crypto.AESGCM()
