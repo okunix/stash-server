@@ -193,3 +193,20 @@ func RemoveSecretsEntry(stashService ports.StashService) apiFunc {
 		return jsonutil.SendMessage(w, jsonutil.Ok)
 	}
 }
+
+func GetStashMembers(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		resp, err := stashService.ListStashMembers(ctx, stashUUID)
+		if err != nil {
+			return err
+		}
+		return jsonutil.Write(w, http.StatusOK, resp)
+	}
+}
