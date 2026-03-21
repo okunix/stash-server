@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
@@ -173,9 +174,23 @@ func AddSecretsEntry(stashService ports.StashService) apiFunc {
 			return ports.NotFoundError(errStashNotFound)
 		}
 
-		req, err := jsonutil.Read[dto.AddSecret](r.Body)
-		if err != nil {
-			return ports.BadRequestError(nil)
+		req := dto.AddSecret{}
+		contentType := r.Header.Get("Content-Type")
+		if contentType == "application/json" {
+			req, err = jsonutil.Read[dto.AddSecret](r.Body)
+			if err != nil {
+				return ports.BadRequestError(nil)
+			}
+		} else {
+			if strings.HasPrefix(contentType, "multipart/form-data") {
+				r.ParseMultipartForm(1 << 20)
+			} else {
+				r.ParseForm()
+			}
+			req = dto.AddSecret{
+				Name:  r.FormValue("name"),
+				Value: r.FormValue("value"),
+			}
 		}
 
 		if err := stashService.AddSecretsEntry(ctx, stashUUID, req); err != nil {
