@@ -288,3 +288,17 @@ func (s *stashRepository) RemoveMember(ctx context.Context, params stash.RemoveM
 	}
 	return nil
 }
+
+const (
+	getStashMaintainerSQL = `select u.id, u.username from users u inner join stashes s on s.maintainer_id = u.id where s.id = $1;`
+)
+
+func (s *stashRepository) GetStashMaintainer(
+	ctx context.Context,
+	stashID uuid.UUID,
+) (*stash.StashMaintainer, error) {
+	var resp stash.StashMaintainer
+	err := s.db.QueryRowContext(ctx, getStashMaintainerSQL, stashID).
+		Scan(&resp.UserID, &resp.Username)
+	return &resp, err
+}

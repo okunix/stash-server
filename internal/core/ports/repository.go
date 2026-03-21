@@ -49,6 +49,7 @@ type StashRepository interface {
 	IsStashMember(ctx context.Context, userID, stashID uuid.UUID) (bool, error)
 	IsStashMaintainer(ctx context.Context, userID, stashID uuid.UUID) (bool, error)
 	IsStashMemberOrMaintainer(ctx context.Context, userID, stashID uuid.UUID) (bool, error)
+	GetStashMaintainer(ctx context.Context, stashID uuid.UUID) (*stash.StashMaintainer, error)
 }
 
 type UserRepository interface {

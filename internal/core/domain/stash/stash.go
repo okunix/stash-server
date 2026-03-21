@@ -57,3 +57,8 @@ type StashMember struct {
 	UserID   uuid.UUID `json:"userID"`
 	Since    time.Time `json:"since"`
 }
+
+type StashMaintainer struct {
+	Username string    `json:"username"`
+	UserID   uuid.UUID `json:"userID"`
+}

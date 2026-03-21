@@ -227,6 +227,15 @@ func (s *stashService) ListStashMembers(
 			})
 	}
 
+	maintainer, err := s.stashRepo.GetStashMaintainer(ctx, stashID)
+	if err != nil {
+		return nil, ports.InternalError(err)
+	}
+	res.Maintainer = dto.StashMaintainerResponse{
+		UserID:   maintainer.UserID,
+		Username: maintainer.Username,
+	}
+
 	return res, nil
 }
 

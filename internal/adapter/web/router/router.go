@@ -89,6 +89,14 @@ func newV1Router(opts RouterOptions) http.Handler {
 		"GET /stashes/{stash_id}/members",
 		middleware.Authenticated(handlers.GetStashMembers(opts.StashService).Unwrap()),
 	)
+	router.Handle(
+		"POST /stashes/{stash_id}/members",
+		middleware.Authenticated(handlers.AddStashMember(opts.StashService).Unwrap()),
+	)
+	router.Handle(
+		"DELETE /stashes/{stash_id}/members/{user_id}",
+		middleware.Authenticated(handlers.RemoveStashMember(opts.StashService).Unwrap()),
+	)
 
 	return router
 }

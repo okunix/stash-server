@@ -31,7 +31,7 @@ func DeleteStash(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		if err := stashService.DeleteStash(ctx, stashUUID); err != nil {
@@ -49,7 +49,7 @@ func GetStashByID(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		stash, err := stashService.GetStashByID(ctx, stashUUID)
@@ -85,7 +85,7 @@ func LockStash(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		if err := stashService.Lock(ctx, stashUUID); err != nil {
@@ -105,7 +105,7 @@ func UnlockStash(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		req, err := jsonutil.Read[request](r.Body)
@@ -127,7 +127,7 @@ func GetSecrets(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		resp, err := stashService.GetSecrets(ctx, stashUUID)
@@ -145,7 +145,7 @@ func GetSecretsEntry(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		entryName := r.PathValue("entry_name")
@@ -170,7 +170,7 @@ func AddSecretsEntry(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		req, err := jsonutil.Read[dto.AddSecret](r.Body)
@@ -192,7 +192,7 @@ func RemoveSecretsEntry(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		entryName := r.PathValue("entry_name")
@@ -211,7 +211,7 @@ func GetStashMembers(stashService ports.StashService) apiFunc {
 		stashID := r.PathValue("stash_id")
 		stashUUID, err := uuid.Parse(stashID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			return ports.NotFoundError(errStashNotFound)
 		}
 
 		resp, err := stashService.ListStashMembers(ctx, stashUUID)
@@ -219,5 +219,58 @@ func GetStashMembers(stashService ports.StashService) apiFunc {
 			return err
 		}
 		return jsonutil.Write(w, http.StatusOK, resp)
+	}
+}
+
+func AddStashMember(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.NotFoundError(errStashNotFound)
+		}
+
+		req, err := jsonutil.Read[dto.AddStashMemberRequest](r.Body)
+		if err != nil {
+			return ports.BadRequestError(nil)
+		}
+
+		req.StashID = stashUUID
+
+		if err := stashService.AddStashMember(ctx, req); err != nil {
+			return err
+		}
+
+		return jsonutil.SendMessage(w, jsonutil.Created)
+	}
+}
+
+func RemoveStashMember(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.NotFoundError(errStashNotFound)
+		}
+
+		userID := r.PathValue("user_id")
+		userUUID, err := uuid.Parse(userID)
+		if err != nil {
+			return ports.NotFoundError(errUserNotFound)
+		}
+
+		req := dto.RemoveStashMemberRequest{
+			StashID: stashUUID,
+			UserID:  userUUID,
+		}
+
+		if err := stashService.RemoveStashMember(ctx, req); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Ok)
 	}
 }

@@ -84,8 +84,14 @@ type StashMemberResponse struct {
 	Since    time.Time `json:"since"`
 }
 
+type StashMaintainerResponse struct {
+	UserID   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
+}
+
 type ListStashMemberResponse struct {
-	Members []StashMemberResponse `json:"members"`
+	Maintainer StashMaintainerResponse `json:"maintainer"`
+	Members    []StashMemberResponse   `json:"members"`
 }
 
 type AddStashMemberRequest struct {
