@@ -77,7 +77,7 @@ func newV1Router(opts RouterOptions) http.Handler {
 		middleware.Authenticated(handlers.GetSecretsEntry(opts.StashService).Unwrap()),
 	)
 	router.Handle(
-		"POST /stashes/{stash_id}/secrets",
+		"PUT /stashes/{stash_id}/secrets",
 		middleware.Authenticated(handlers.AddSecretsEntry(opts.StashService).Unwrap()),
 	)
 	router.Handle(

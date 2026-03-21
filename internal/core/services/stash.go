@@ -378,7 +378,7 @@ func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password s
 	}
 	plaintext, err := cipher.Decrypt(key.Bytes(), encryptedData)
 	if err != nil {
-		return ports.InternalError(err)
+		return ports.BadRequestError(errors.New("failed to decrypt data"))
 	}
 	var data map[string]string
 	if err := json.Unmarshal(plaintext, &data); err != nil {
