@@ -290,8 +290,12 @@ func (s *stashService) GetSecrets(
 	if err != nil {
 		return nil, ports.BadRequestError(err)
 	}
+	keys := make([]string, 0, len(secret.Data))
+	for k := range secret.Data {
+		keys = append(keys, k)
+	}
 	resp := &dto.SecretResponse{
-		Data:       secret.Data,
+		Keys:       keys,
 		UnlockedAt: secret.UnlockedAt,
 	}
 	return resp, nil

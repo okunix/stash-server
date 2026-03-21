@@ -8,8 +8,9 @@ import (
 )
 
 type SecretResponse struct {
-	Data       map[string]string `json:"data"`
-	UnlockedAt time.Time         `json:"unlocked_at"`
+	//Data       map[string]string `json:"data"`
+	Keys       []string  `json:"keys"`
+	UnlockedAt time.Time `json:"unlocked_at"`
 }
 
 type GetSecretByStashID struct {
