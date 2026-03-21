@@ -217,6 +217,7 @@ func (s *stashService) ListStashMembers(
 	}
 
 	res := new(dto.ListStashMemberResponse)
+	res.Members = make([]dto.StashMemberResponse, 0)
 	for _, v := range members {
 		res.Members = append(res.Members,
 			dto.StashMemberResponse{
