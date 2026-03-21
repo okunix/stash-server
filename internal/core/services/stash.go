@@ -61,9 +61,9 @@ func (s *stashService) isStashMemberOrMaintainer(
 		return currentUser, ports.UnauthorizedError(nil)
 	}
 
-	_, err := s.stashRepo.IsStashMemberOrMaintainer(ctx, currentUser.UserID, stashID)
-	if err != nil {
-		return currentUser, ports.ForbiddenError(errors.New("you are not stash member"))
+	ok, _ = s.stashRepo.IsStashMemberOrMaintainer(ctx, currentUser.UserID, stashID)
+	if !ok {
+		return currentUser, ports.ForbiddenError(errors.New("you are not a member of this stash"))
 	}
 	return currentUser, nil
 }
