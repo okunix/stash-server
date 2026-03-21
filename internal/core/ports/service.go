@@ -22,7 +22,7 @@ type StashService interface {
 
 	GetSecrets(ctx context.Context, stashID uuid.UUID) (*dto.SecretResponse, error)
 	GetSecretsEntry(ctx context.Context, stashID uuid.UUID, entryKey string) (string, error)
-	AddSecretsEntry(ctx context.Context, stashID uuid.UUID, entryKey, value string) error
+	AddSecretsEntry(ctx context.Context, stashID uuid.UUID, req dto.AddSecret) error
 	RemoveSecretsEntry(ctx context.Context, stashID uuid.UUID, entryKey string) error
 	ListUnlockedSecrets(ctx context.Context) ([]*dto.StashResponse, error)
 

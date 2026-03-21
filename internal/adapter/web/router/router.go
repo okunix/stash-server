@@ -67,5 +67,23 @@ func newV1Router(opts RouterOptions) http.Handler {
 		"POST /stashes/{stash_id}/lock",
 		middleware.Authenticated(handlers.LockStash(opts.StashService).Unwrap()),
 	)
+
+	router.Handle(
+		"GET /stashes/{stash_id}/secrets",
+		middleware.Authenticated(handlers.GetSecrets(opts.StashService).Unwrap()),
+	)
+	router.Handle(
+		"GET /stashes/{stash_id}/secrets/{entry_name}",
+		middleware.Authenticated(handlers.GetSecretsEntry(opts.StashService).Unwrap()),
+	)
+	router.Handle(
+		"POST /stashes/{stash_id}/secrets",
+		middleware.Authenticated(handlers.AddSecretsEntry(opts.StashService).Unwrap()),
+	)
+	router.Handle(
+		"DELETE /stashes/{stash_id}/secrets/{entry_name}",
+		middleware.Authenticated(handlers.RemoveSecretsEntry(opts.StashService).Unwrap()),
+	)
+
 	return router
 }

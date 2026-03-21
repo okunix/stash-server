@@ -309,17 +309,22 @@ func (s *stashService) GetSecretsEntry(
 func (s *stashService) AddSecretsEntry(
 	ctx context.Context,
 	stashID uuid.UUID,
-	entryKey, value string,
+	req dto.AddSecret,
 ) error {
 	_, err := s.isStashMaintainer(ctx, stashID)
 	if err != nil {
 		return err
 	}
+
+	if problems, ok := req.Validate(); !ok {
+		return ports.NewValidationError(problems)
+	}
+
 	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
 	if err != nil {
 		return ports.NotFoundError(err)
 	}
-	sec.AddEntry(entryKey, value)
+	sec.AddEntry(req.Name, req.Value)
 	err = s.secretRepo.UpdateSecret(ctx, stashID, sec)
 	if err != nil {
 		return ports.InternalError(err)

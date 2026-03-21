@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/secret"
 )
 
 type SecretResponse struct {
@@ -19,4 +20,17 @@ type GetSecretByStashID struct {
 type ListSecretResponse struct {
 	Page    *Page            `json:"page,omitempty"`
 	Content []SecretResponse `json:"content"`
+}
+
+type AddSecret struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (a AddSecret) Validate() (map[string]string, bool) {
+	problems := make(map[string]string)
+	if err := secret.ValidateEntryName(a.Name); err != nil {
+		problems["name"] = err.Error()
+	}
+	return problems, len(problems) == 0
 }

@@ -20,7 +20,7 @@ func CreateStash(stashService ports.StashService) apiFunc {
 		if err := stashService.CreateStash(ctx, dto); err != nil {
 			return err
 		}
-		return jsonutil.SendMessage(w, jsonutil.Ok)
+		return jsonutil.SendMessage(w, jsonutil.Created)
 	}
 }
 
@@ -112,6 +112,82 @@ func UnlockStash(stashService ports.StashService) apiFunc {
 		}
 
 		if err := stashService.Unlock(ctx, stashUUID, req.Password); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Ok)
+	}
+}
+
+func GetSecrets(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		resp, err := stashService.GetSecrets(ctx, stashUUID)
+		if err != nil {
+			return err
+		}
+		return jsonutil.Write(w, http.StatusOK, resp)
+	}
+}
+
+func GetSecretsEntry(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		entryName := r.PathValue("entry_name")
+
+		resp, err := stashService.GetSecretsEntry(ctx, stashUUID, entryName)
+		if err != nil {
+			return err
+		}
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(resp))
+		return nil
+	}
+}
+
+func AddSecretsEntry(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		req, err := jsonutil.Read[dto.AddSecret](r.Body)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+
+		if err := stashService.AddSecretsEntry(ctx, stashUUID, req); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Created)
+	}
+}
+
+func RemoveSecretsEntry(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.BadRequestError(err)
+		}
+		entryName := r.PathValue("entry_name")
+		if err := stashService.RemoveSecretsEntry(ctx, stashUUID, entryName); err != nil {
 			return err
 		}
 		return jsonutil.SendMessage(w, jsonutil.Ok)
