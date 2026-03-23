@@ -11,6 +11,9 @@ import (
 	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
 )
 
+// add update stash and delete stash handlers
+// also add some terraform helper handlers to check before apply
+
 func CreateStash(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()

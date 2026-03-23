@@ -8,6 +8,8 @@ import (
 	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
 )
 
+// add get current user(whoami), update password and delete user handlers
+
 func Login(userService ports.UserService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
