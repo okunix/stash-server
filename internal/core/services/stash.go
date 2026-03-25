@@ -3,10 +3,8 @@ package services
 import (
 	"context"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
@@ -392,9 +390,6 @@ func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password s
 	if err != nil {
 		return ports.InternalError(err)
 	}
-	fmt.Printf("stashMasterKeyHash: %v\n", hex.EncodeToString(stashMasterKeyHash))
-	fmt.Printf("computed masterKeyHash: %v\n", hex.EncodeToString(masterKeyHash.Bytes()))
-	fmt.Printf("computed masterKey: %v\n", masterKey.String())
 	eq := outerKDF.Compare(stashMasterKeyHash, masterKeyHash.Bytes())
 	if !eq {
 		return ports.BadRequestError(errors.New("wrong password"))
