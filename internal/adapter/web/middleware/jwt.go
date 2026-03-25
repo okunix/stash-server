@@ -6,6 +6,7 @@ import (
 
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/user"
 )
 
 const (
@@ -29,4 +30,19 @@ func Authenticated(next http.Handler) http.Handler {
 		ctx := auth.WithUser(r.Context(), &claims.CurrentUser)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func Admin(next http.Handler) http.Handler {
+	return Authenticated(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		currentUser, ok := auth.UserFromContext(r.Context())
+		if !ok {
+			jsonutil.SendMessage(w, jsonutil.Unauthorized)
+			return
+		}
+		if currentUser.Role != user.RoleAdmin {
+			jsonutil.SendMessage(w, jsonutil.Forbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	}))
 }
