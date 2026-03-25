@@ -1,7 +1,6 @@
 package web
 
 import (
-	"database/sql"
 	"net/http"
 
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/router"
@@ -10,7 +9,6 @@ import (
 
 type ServerOptions struct {
 	Addr         string
-	DB           *sql.DB
 	UserService  ports.UserService
 	StashService ports.StashService
 }
@@ -18,7 +16,6 @@ type ServerOptions struct {
 func NewServer(opts ServerOptions) *http.Server {
 	handler := router.Router(
 		router.RouterOptions{
-			DB:           opts.DB,
 			UserService:  opts.UserService,
 			StashService: opts.StashService,
 		},

@@ -1,8 +1,6 @@
 package router
 
 import (
-	"database/sql"
-	"fmt"
 	"net/http"
 
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/handlers"
@@ -11,7 +9,6 @@ import (
 )
 
 type RouterOptions struct {
-	DB           *sql.DB
 	UserService  ports.UserService
 	StashService ports.StashService
 }
@@ -26,21 +23,16 @@ func Router(opts RouterOptions) http.Handler {
 	handler = middleware.Logger(handler)
 	handler = middleware.RealIP(handler)
 	handler = middleware.RequestID(handler)
-	//handler = middleware.Recovery(handler)
+	handler = middleware.Recovery(handler)
 
 	return handler
 }
 
 func newV1Router(opts RouterOptions) http.Handler {
 	router := http.NewServeMux()
-	router.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		var id string
-		opts.DB.QueryRowContext(r.Context(), "SELECT gen_random_uuid();").Scan(&id)
-		fmt.Fprintf(w, "%s\n", id)
-	})
 
 	router.Handle("POST /login", handlers.Login(opts.UserService).Unwrap())
-	router.Handle("POST /signup", handlers.CreateUser(opts.UserService).Unwrap())
+	router.Handle("POST /signup", middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
 
 	router.Handle(
 		"GET /stashes",

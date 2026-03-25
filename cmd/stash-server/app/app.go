@@ -89,7 +89,6 @@ func Run(configFilePath string) {
 	// running http server
 	serverOptions := web.ServerOptions{
 		Addr:         conf.Addr,
-		DB:           postgres.Postgres(),
 		UserService:  userService,
 		StashService: stashService,
 	}
