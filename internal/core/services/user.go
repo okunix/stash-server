@@ -41,6 +41,7 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest)
 	_, err = u.userRepo.AddUser(ctx, user.AddUserParams{
 		Username:     req.Username,
 		PasswordHash: passwordHash,
+		Role:         user.RoleUser,
 	})
 	if err != nil {
 		return ports.BadRequestError(err)

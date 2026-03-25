@@ -22,6 +22,11 @@ var (
 	ErrNoPasswordHash  = errors.New("Password hash must be provided")
 )
 
+var (
+	RoleAdmin = "admin"
+	RoleUser  = "user"
+)
+
 func ValidateUsername(username string) error {
 	if len(username) < 2 {
 		return errors.New("Username is too short")
@@ -53,7 +58,7 @@ func ValidatePasswordHash(passwordHash string) error {
 }
 
 func ValidateUserRole(role string) error {
-	roles := []string{"admin", "user"}
+	roles := []string{RoleAdmin, RoleUser}
 	if !slices.Contains(roles, role) {
 		return fmt.Errorf("Unknown role specified: %s", role)
 	}

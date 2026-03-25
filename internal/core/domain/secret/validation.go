@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	nameRegex = regexp.MustCompile(`^[a-zA-Z0-9\-_+. ]+$`)
+	nameRegex = regexp.MustCompile(`^[a-zA-Z0-9\-_+.]+$`)
 )
 
 func ValidateEntryName(name string) error {
