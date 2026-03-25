@@ -12,6 +12,7 @@ type Stash struct {
 	Description   *string   `json:"desc"`
 	MaintainerID  uuid.UUID `json:"maintainer_id"`
 	MasterKeyHash string    `json:"-"`
+	MasterKeySalt string    `json:"-"`
 	EncryptedData string    `json:"data"`
 	CreatedAt     time.Time `json:"created_at"`
 }
@@ -27,6 +28,7 @@ type CreateStashParams struct {
 	Description   *string
 	MaintainerID  uuid.UUID
 	MasterKeyHash string
+	MasterKeySalt string
 	EncryptedData string
 }
 

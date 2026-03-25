@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
@@ -160,24 +162,23 @@ func (s *stashService) CreateStash(ctx context.Context, req dto.CreateStashReque
 		return ports.NewValidationError(problems)
 	}
 
-	kdf, _ := crypto.NewArgon2ID()
-	masterKey, _ := kdf.DeriveKey([]byte(req.Password))
-	masterKeyString := masterKey.String()
+	innerKDF, _ := crypto.NewArgon2ID()
+	masterKey, _ := innerKDF.DeriveKey([]byte(req.Password))
+	masterKeySalt := masterKey.Salt()
 
-	masterKeyHash, err := crypto.HashPassword(masterKeyString)
-	if err != nil {
-		return ports.InternalError(err)
-	}
+	outerKDF, _ := crypto.NewArgon2ID()
+	masterKeyHash, _ := outerKDF.DeriveKey(masterKey.Bytes())
 
 	initialData := "{}"
 	cipher := crypto.AESGCM()
 	encryptedData, _ := cipher.Encrypt(masterKey.Bytes(), []byte(initialData))
 
-	_, err = s.stashRepo.CreateStash(ctx, stash.CreateStashParams{
+	_, err := s.stashRepo.CreateStash(ctx, stash.CreateStashParams{
 		Name:          req.Name,
 		Description:   req.Description,
 		MaintainerID:  currentUser.UserID,
-		MasterKeyHash: masterKeyHash,
+		MasterKeyHash: masterKeyHash.String(),
+		MasterKeySalt: string(masterKeySalt),
 		EncryptedData: base64.RawStdEncoding.EncodeToString(encryptedData),
 	})
 	if err != nil {
@@ -384,17 +385,27 @@ func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password s
 		return err
 	}
 
-	kdf, _, _ := crypto.NewArgon2IDFromString(st.MasterKeyHash)
-	key, err := kdf.DeriveKey([]byte(password))
+	innerKDF, _ := crypto.NewArgon2ID(crypto.WithHeader(st.MasterKeySalt))
+	masterKey, _ := innerKDF.DeriveKey([]byte(password))
+	outerKDF, stashMasterKeyHash, _ := crypto.NewArgon2IDFromString(st.MasterKeyHash)
+	masterKeyHash, err := outerKDF.DeriveKey(masterKey.Bytes())
 	if err != nil {
 		return ports.InternalError(err)
 	}
+	fmt.Printf("stashMasterKeyHash: %v\n", hex.EncodeToString(stashMasterKeyHash))
+	fmt.Printf("computed masterKeyHash: %v\n", hex.EncodeToString(masterKeyHash.Bytes()))
+	fmt.Printf("computed masterKey: %v\n", masterKey.String())
+	eq := outerKDF.Compare(stashMasterKeyHash, masterKeyHash.Bytes())
+	if !eq {
+		return ports.BadRequestError(errors.New("wrong password"))
+	}
+
 	cipher := crypto.AESGCM()
 	encryptedData, err := base64.RawStdEncoding.DecodeString(st.EncryptedData)
 	if err != nil {
 		return ports.InternalError(err)
 	}
-	plaintext, err := cipher.Decrypt(key.Bytes(), encryptedData)
+	plaintext, err := cipher.Decrypt(masterKey.Bytes(), encryptedData)
 	if err != nil {
 		return ports.BadRequestError(errors.New("failed to decrypt data"))
 	}
@@ -405,7 +416,7 @@ func (s *stashService) Unlock(ctx context.Context, stashID uuid.UUID, password s
 	params := secret.AddSecretParams{
 		StashID:      st.ID,
 		MaintainerID: st.MaintainerID,
-		MasterKey:    key.Bytes(),
+		MasterKey:    masterKey.Bytes(),
 		Data:         data,
 	}
 	if _, err := s.secretRepo.AddSecret(ctx, params); err != nil {

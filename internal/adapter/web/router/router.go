@@ -32,7 +32,7 @@ func newV1Router(opts RouterOptions) http.Handler {
 	router := http.NewServeMux()
 
 	router.Handle("POST /login", handlers.Login(opts.UserService).Unwrap())
-	router.Handle("POST /signup", middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
+	router.Handle("POST /signup", handlers.CreateUser(opts.UserService).Unwrap())
 
 	router.Handle(
 		"GET /stashes",

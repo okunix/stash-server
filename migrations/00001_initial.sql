@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS stashes (
     description TEXT,
     maintainer_id UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
+    master_key_salt TEXT NOT NULL,
     encrypted_data TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT (now()),
     UNIQUE (name, maintainer_id)

@@ -18,6 +18,7 @@ type stashSQLModel struct {
 	description   sql.NullString
 	maintainerID  uuid.UUID
 	masterKeyHash string
+	masterKeySalt string
 	encryptedData sql.NullString
 	createdAt     time.Time
 }
@@ -37,6 +38,7 @@ func (s *stashSQLModel) Domain() *stash.Stash {
 		Description:   desc,
 		MaintainerID:  s.maintainerID,
 		MasterKeyHash: s.masterKeyHash,
+		MasterKeySalt: s.masterKeySalt,
 		EncryptedData: encryptedData,
 		CreatedAt:     s.createdAt,
 	}
@@ -50,6 +52,7 @@ func scanStashSQLRow(row scannable) (*stashSQLModel, error) {
 		&resp.description,
 		&resp.maintainerID,
 		&resp.masterKeyHash,
+		&resp.masterKeySalt,
 		&resp.encryptedData,
 		&resp.createdAt,
 	)
@@ -83,8 +86,8 @@ func (s *stashRepository) CommitData(ctx context.Context, params stash.CommitDat
 }
 
 const createStashStmt = `
-INSERT INTO stashes (name, description, maintainer_id, master_key_hash, encrypted_data)
-VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;
+INSERT INTO stashes (name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data)
+VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at;
 `
 
 func (s *stashRepository) CreateStash(
@@ -100,6 +103,7 @@ func (s *stashRepository) CreateStash(
 		params.Description,
 		params.MaintainerID,
 		params.MasterKeyHash,
+		params.MasterKeySalt,
 		params.EncryptedData,
 	).Scan(&id, &createdAt)
 	if err != nil {
@@ -111,6 +115,7 @@ func (s *stashRepository) CreateStash(
 		Description:   params.Description,
 		MaintainerID:  params.MaintainerID,
 		MasterKeyHash: params.MasterKeyHash,
+		MasterKeySalt: params.MasterKeySalt,
 		EncryptedData: params.EncryptedData,
 		CreatedAt:     createdAt,
 	}
@@ -133,7 +138,7 @@ func (s *stashRepository) DeleteStash(ctx context.Context, stashID uuid.UUID) er
 }
 
 const updateStashStmt = `
-UPDATE stashes SET name = $1, description = $2 WHERE id = $3 RETURNING id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at;
+UPDATE stashes SET name = $1, description = $2 WHERE id = $3 RETURNING id, name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data, created_at;
 `
 
 func (s *stashRepository) UpdateStash(
@@ -148,7 +153,7 @@ func (s *stashRepository) UpdateStash(
 }
 
 const getStashByIDStmt = `
-SELECT id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at FROM stashes WHERE id = $1;
+SELECT id, name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data, created_at FROM stashes WHERE id = $1;
 `
 
 func (s *stashRepository) GetStashByID(ctx context.Context, id uuid.UUID) (*stash.Stash, error) {
@@ -158,7 +163,7 @@ func (s *stashRepository) GetStashByID(ctx context.Context, id uuid.UUID) (*stas
 
 const (
 	getTotalStashesStmt = `SELECT COUNT(*) FROM stashes WHERE maintainer_id = $1;`
-	listStashesStmt     = `SELECT id, name, description, maintainer_id, master_key_hash, encrypted_data, created_at FROM stashes WHERE maintainer_id = $1 LIMIT $2 OFFSET $3;`
+	listStashesStmt     = `SELECT id, name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data, created_at FROM stashes WHERE maintainer_id = $1 LIMIT $2 OFFSET $3;`
 )
 
 func (s *stashRepository) ListStashes(
