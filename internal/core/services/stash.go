@@ -161,18 +161,23 @@ func (s *stashService) CreateStash(ctx context.Context, req dto.CreateStashReque
 	}
 
 	kdf, _ := crypto.NewArgon2ID()
-	key, _ := kdf.DeriveKey([]byte(req.MasterKey))
-	masterKeyHashString := key.String()
+	masterKey, _ := kdf.DeriveKey([]byte(req.Password))
+	masterKeyString := masterKey.String()
+
+	masterKeyHash, err := crypto.HashPassword(masterKeyString)
+	if err != nil {
+		return ports.InternalError(err)
+	}
 
 	initialData := "{}"
 	cipher := crypto.AESGCM()
-	encryptedData, _ := cipher.Encrypt(key.Bytes(), []byte(initialData))
+	encryptedData, _ := cipher.Encrypt(masterKey.Bytes(), []byte(initialData))
 
-	_, err := s.stashRepo.CreateStash(ctx, stash.CreateStashParams{
+	_, err = s.stashRepo.CreateStash(ctx, stash.CreateStashParams{
 		Name:          req.Name,
 		Description:   req.Description,
 		MaintainerID:  currentUser.UserID,
-		MasterKeyHash: masterKeyHashString,
+		MasterKeyHash: masterKeyHash,
 		EncryptedData: base64.RawStdEncoding.EncodeToString(encryptedData),
 	})
 	if err != nil {

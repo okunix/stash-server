@@ -57,9 +57,9 @@ func ValidateMasterKeySalt(salt string) error {
 	return nil
 }
 
-func ValidateMasterKey(key string) error {
+func ValidatePassword(key string) error {
 	if len(key) < 10 {
-		return errors.New("Master key is too short")
+		return errors.New("Password is too short")
 	}
 	return nil
 }

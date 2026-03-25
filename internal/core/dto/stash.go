@@ -39,7 +39,7 @@ type GetStashByIDRequest struct {
 type CreateStashRequest struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
-	MasterKey   string  `json:"master_key"`
+	Password    string  `json:"password"`
 }
 
 func (req CreateStashRequest) Validate() (map[string]string, bool) {
@@ -50,8 +50,8 @@ func (req CreateStashRequest) Validate() (map[string]string, bool) {
 	if err := stash.ValidateDescription(req.Description); err != nil {
 		problems["description"] = err.Error()
 	}
-	if err := stash.ValidateMasterKey(req.MasterKey); err != nil {
-		problems["master_key"] = err.Error()
+	if err := stash.ValidatePassword(req.Password); err != nil {
+		problems["password"] = err.Error()
 	}
 	return problems, len(problems) == 0
 }
