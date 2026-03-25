@@ -33,4 +33,14 @@ func TestArgon2(t *testing.T) {
 
 	assert.Equal(t, key2, key3)
 	assert.Equal(t, string(hash), string(key2.Bytes()))
+
+	header := string(key1.Salt())
+	t.Log(header)
+	kdf, err = NewArgon2ID(WithHeader(header))
+	assert.Nil(t, err)
+	key4, err := kdf.DeriveKey(password)
+	assert.Nil(t, err)
+	assert.Equal(t, key1.String(), key4.String())
+	t.Log(key1.String())
+	t.Log(key4.String())
 }

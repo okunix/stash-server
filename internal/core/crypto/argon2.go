@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -15,6 +16,9 @@ var (
 	argon2EncodingRegex = regexp.MustCompile(
 		`^\$argon2id\$v=(?P<v>\d+)\$m=(?P<d>\d+),t=(?P<t>\d+),p=(?P<p>\d+)\$(?P<salt>\S+?)\$(?P<hash>\S+)$`,
 	)
+	argon2HeaderRegex = regexp.MustCompile(
+		`^\$argon2id\$v=(?P<v>\d+)\$m=(?P<d>\d+),t=(?P<t>\d+),p=(?P<p>\d+)\$(?P<salt>\S+?)\$$`,
+	)
 )
 
 type KDF interface {
@@ -25,6 +29,7 @@ type KDF interface {
 type Key interface {
 	String() string
 	Bytes() []byte
+	Salt() []byte
 }
 
 type argon2IDKey struct {
@@ -45,6 +50,19 @@ func (a argon2IDKey) String() string {
 		keyb64,
 	)
 	return encoded
+}
+
+func (a argon2IDKey) Salt() []byte {
+	saltb64 := base64.RawStdEncoding.EncodeToString(a.salt)
+	encoded := fmt.Sprintf(
+		"$argon2id$v=%d$m=%d,t=%d,p=%d$%s$",
+		argon2.Version,
+		a.memory,
+		a.time,
+		a.threads,
+		saltb64,
+	)
+	return []byte(encoded)
 }
 
 func (a argon2IDKey) Bytes() []byte {
@@ -96,6 +114,24 @@ func WithSalt(salt []byte) Argon2IDOption {
 	}
 }
 
+func WithHeader(header string) Argon2IDOption {
+	return func(ar *Argon2ID) error {
+		matches := argon2HeaderRegex.FindStringSubmatch(header)
+		if len(matches) < 6 {
+			return errors.New("invalid hash header format")
+		}
+		salt, _ := base64.RawStdEncoding.DecodeString(matches[5])
+		memory, _ := strconv.ParseUint(matches[2], 10, 32)
+		time, _ := strconv.ParseUint(matches[3], 10, 32)
+		threads, _ := strconv.ParseUint(matches[4], 10, 8)
+		ar.salt = salt
+		ar.memory = uint32(memory)
+		ar.threads = uint8(threads)
+		ar.time = uint32(time)
+		return nil
+	}
+}
+
 func newDefaultArgon2ID() Argon2ID {
 	randomSalt := make([]byte, 32)
 	rand.Read(randomSalt)
@@ -120,6 +156,9 @@ func NewArgon2ID(opts ...Argon2IDOption) (KDF, error) {
 
 func NewArgon2IDFromString(s string) (kdf KDF, hash []byte, err error) {
 	matches := argon2EncodingRegex.FindStringSubmatch(s)
+	if len(matches) < 7 {
+		return nil, []byte{}, errors.New("invalid hash string")
+	}
 	salt, _ := base64.RawStdEncoding.DecodeString(matches[5])
 	hash, _ = base64.RawStdEncoding.DecodeString(matches[6])
 	memory, _ := strconv.ParseUint(matches[2], 10, 32)
