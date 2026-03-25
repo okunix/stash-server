@@ -14,12 +14,13 @@ CREATE TABLE IF NOT EXISTS users(
 
 CREATE TABLE IF NOT EXISTS stashes (
     id UUID PRIMARY KEY DEFAULT (gen_random_uuid()),
-    name TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
     description TEXT,
     maintainer_id UUID NOT NULL REFERENCES users(id) ON DELETE SET NULL,
     master_key_hash TEXT NOT NULL,
     encrypted_data TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT (now())
+    created_at TIMESTAMP NOT NULL DEFAULT (now()),
+    UNIQUE (name, maintainer_id)
 );
 
 CREATE TABLE IF NOT EXISTS stash_member (
