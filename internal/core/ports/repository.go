@@ -59,4 +59,6 @@ type UserRepository interface {
 	AddUser(ctx context.Context, params user.AddUserParams) (*user.User, error)
 	UpdateUser(ctx context.Context, params user.UpdateUserParams) (*user.User, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+
+	IsAdminPresent(ctx context.Context) (bool, error)
 }

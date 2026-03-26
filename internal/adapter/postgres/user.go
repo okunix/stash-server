@@ -182,3 +182,15 @@ func (u *userRepository) ListUsers(
 	tx.Commit()
 	return users, count, nil
 }
+
+const isAdminPresentSQL = `
+	SELECT EXISTS (
+		SELECT 1 FROM users WHERE role = 'admin'
+	);
+`
+
+func (u *userRepository) IsAdminPresent(ctx context.Context) (bool, error) {
+	var exists bool
+	err := u.db.QueryRowContext(ctx, isAdminPresentSQL).Scan(&exists)
+	return exists, err
+}
