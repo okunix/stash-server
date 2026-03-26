@@ -90,3 +90,26 @@ func (u *userService) LockUser(ctx context.Context, userID uuid.UUID) error {
 func (u *userService) UnlockUser(ctx context.Context, userID uuid.UUID) error {
 	panic("unimplemented")
 }
+
+func (u *userService) GetCurrentUser(ctx context.Context) (dto.UserResponse, error) {
+	panic("unimplemented")
+}
+
+func (u *userService) GetUserByID(ctx context.Context, id uuid.UUID) (dto.UserResponse, error) {
+	panic("unimplemented")
+}
+
+func (u *userService) GetUserByUsername(
+	ctx context.Context,
+	username string,
+) (dto.UserResponse, error) {
+	panic("unimplemented")
+}
+
+func (u *userService) InitializeAdminUser(ctx context.Context) (dto.InitAdminResponse, error) {
+	panic("unimplemented")
+}
+
+func (u *userService) ChangePassword(ctx context.Context, req dto.ChangePasswordRequest) error {
+	panic("unimplemented")
+}
