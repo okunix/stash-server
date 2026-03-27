@@ -12,6 +12,7 @@ import (
 type StashService interface {
 	ListStashes(ctx context.Context, req dto.ListStashesRequest) (*dto.ListStashResponse, error)
 	GetStashByID(ctx context.Context, stashID uuid.UUID) (*dto.StashResponse, error)
+	GetStashByName(ctx context.Context, name string) (*dto.StashResponse, error)
 	CreateStash(ctx context.Context, req dto.CreateStashRequest) error
 	UpdateStash(ctx context.Context, req dto.UpdateStashRequest) error
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error

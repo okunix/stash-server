@@ -470,3 +470,19 @@ func (s *stashService) commitDataUpdate(
 	}
 	return nil
 }
+
+func (s *stashService) GetStashByName(
+	ctx context.Context,
+	name string,
+) (*dto.StashResponse, error) {
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, ports.UnauthorizedError(nil)
+	}
+	st, err := s.stashRepo.GetStashByName(ctx, currentUser.UserID, name)
+	if err != nil {
+		return nil, ports.NotFoundError(nil)
+	}
+	_, err = s.secretRepo.GetSecretByStashID(ctx, st.ID)
+	return dto.NewStashResponse(st, err != nil), nil
+}
