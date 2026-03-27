@@ -55,6 +55,7 @@ type StashRepository interface {
 type UserRepository interface {
 	ListUsers(ctx context.Context, params user.ListUsersParams) ([]*user.User, int64, error)
 	GetUser(ctx context.Context, params user.GetUserParams) (*user.User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (*user.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*user.User, error)
 	AddUser(ctx context.Context, params user.AddUserParams) (*user.User, error)
 	UpdateUser(ctx context.Context, params user.UpdateUserParams) (*user.User, error)
