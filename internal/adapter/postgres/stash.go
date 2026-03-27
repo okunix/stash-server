@@ -307,3 +307,18 @@ func (s *stashRepository) GetStashMaintainer(
 		Scan(&resp.UserID, &resp.Username)
 	return &resp, err
 }
+
+const (
+	getStashByNameSQL = `
+		select id, name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data, created_at
+		where maintainer_id = $1 and name = $2;
+	`
+)
+
+func (s *stashRepository) GetStashByName(
+	ctx context.Context,
+	maintainerID, name string,
+) (*stash.Stash, error) {
+	model, err := scanStashSQLRow(s.db.QueryRowContext(ctx, getStashByNameSQL, maintainerID, name))
+	return model.Domain(), err
+}
