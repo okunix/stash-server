@@ -210,3 +210,10 @@ func (u *userService) ChangePassword(ctx context.Context, req dto.ChangePassword
 	}
 	return nil
 }
+
+func (u *userService) GetUsers(ctx context.Context) ([]*dto.UserResponse, error) {
+	if err := u.checkAdminUser(ctx); err != nil {
+		return nil, err
+	}
+	return nil, nil
+}

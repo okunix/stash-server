@@ -40,7 +40,7 @@ type UserService interface {
 	InitializeAdminUser(ctx context.Context) (*dto.InitAdminResponse, error)
 	ChangePassword(ctx context.Context, req dto.ChangePasswordRequest) error
 
-	// admin cli functions
+	GetUsers(ctx context.Context) ([]*dto.UserResponse, error)
 	CreateUser(ctx context.Context, req dto.CreateUserRequest) error
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	LockUser(ctx context.Context, userID uuid.UUID) error
