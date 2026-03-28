@@ -3,6 +3,8 @@ package router
 import (
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/handlers"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/middleware"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
@@ -14,28 +16,29 @@ type RouterOptions struct {
 }
 
 func Router(opts RouterOptions) http.Handler {
-	router := http.NewServeMux()
+	router := chi.NewRouter()
 
-	router.Handle("/api/v1/", http.StripPrefix("/api/v1", newV1Router(opts)))
+	router.Use(middleware.NoCache)
+	router.Use(middleware.Logger)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.RequestID)
+	router.Use(chiMiddleware.CleanPath)
+	router.Use(chiMiddleware.StripSlashes)
+	router.Use(middleware.Recovery)
 
-	handler := http.Handler(router)
-	handler = middleware.NoCache(handler)
-	handler = middleware.Logger(handler)
-	handler = middleware.RealIP(handler)
-	handler = middleware.RequestID(handler)
-	handler = middleware.AddTrailingSlash(handler)
-	handler = middleware.Recovery(handler)
+	router.Mount("/api/v1/", newV1Router(opts))
 
-	return handler
+	return router
 }
 
 func newV1StashRouter(opts RouterOptions) http.Handler {
-	router := http.NewServeMux()
+	router := chi.NewRouter()
+	router.Use(middleware.Authenticated)
 
-	router.Handle("GET /{$}",
+	router.Handle("GET /",
 		handlers.ListStashes(opts.StashService).Unwrap())
 
-	router.Handle("POST /{$}",
+	router.Handle("POST /",
 		handlers.CreateStash(opts.StashService).Unwrap())
 
 	router.Handle("GET /{stash_id}",
@@ -71,37 +74,32 @@ func newV1StashRouter(opts RouterOptions) http.Handler {
 	router.Handle("DELETE /{stash_id}/members/{user_id}",
 		handlers.RemoveStashMember(opts.StashService).Unwrap())
 
-	handler := http.Handler(router)
-	handler = middleware.Authenticated(handler)
-
-	return handler
+	return router
 }
 
 func newV1UserRouter(opts RouterOptions) http.Handler {
-	router := http.NewServeMux()
-
-	router.Handle("GET /{user_id}",
-		handlers.GetUserByID(opts.UserService).Unwrap())
+	router := chi.NewRouter()
+	router.Use(middleware.Authenticated)
 
 	router.Handle("POST /{$}",
 		middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
 
-	handler := http.Handler(router)
-	handler = middleware.Authenticated(handler)
+	router.Handle("GET /{user_id}",
+		handlers.GetUserByID(opts.UserService).Unwrap())
 
-	return handler
+	return router
 }
 
 func newV1Router(opts RouterOptions) http.Handler {
-	router := http.NewServeMux()
+	router := chi.NewRouter()
 
-	router.Handle("/stashes/", http.StripPrefix("/stashes", newV1StashRouter(opts)))
-	router.Handle("/users/", http.StripPrefix("/users", newV1UserRouter(opts)))
+	router.Mount("/users", newV1UserRouter(opts))
+	router.Mount("/stashes", newV1StashRouter(opts))
 
-	router.Handle("GET /whoami/",
+	router.Handle("GET /whoami",
 		middleware.Authenticated(handlers.Whoami(opts.UserService).Unwrap()))
 
-	router.Handle("POST /login/",
+	router.Handle("/login",
 		handlers.Login(opts.UserService).Unwrap())
 
 	return router
