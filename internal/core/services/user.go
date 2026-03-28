@@ -27,11 +27,26 @@ func NewUserService(params UserServiceParams) ports.UserService {
 	}
 }
 
+func (u *userService) checkAdminUser(ctx context.Context) error {
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return ports.UnauthorizedError(nil)
+	}
+	if currentUser.Role != user.RoleAdmin {
+		return ports.ForbiddenError(nil)
+	}
+	return nil
+}
+
 func (u *userService) createUserWithRole(
 	ctx context.Context,
 	req dto.CreateUserRequest,
 	role string,
 ) error {
+	if err := u.checkAdminUser(ctx); err != nil {
+		return err
+	}
+
 	if problems, ok := req.Validate(); !ok {
 		return ports.NewValidationError(problems)
 	}
@@ -58,6 +73,10 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest)
 }
 
 func (u *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
+	if err := u.checkAdminUser(ctx); err != nil {
+		return err
+	}
+
 	slog.Info("deleting user", "id", userID)
 	if err := u.userRepo.DeleteUser(ctx, userID); err != nil {
 		return ports.NotFoundError(err)
