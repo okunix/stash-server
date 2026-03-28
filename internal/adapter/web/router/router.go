@@ -22,6 +22,7 @@ func Router(opts RouterOptions) http.Handler {
 	router.Use(middleware.Logger)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.RequestID)
+	router.Use(middleware.AssignUser)
 	router.Use(chiMiddleware.CleanPath)
 	router.Use(chiMiddleware.StripSlashes)
 	router.Use(middleware.Recovery)

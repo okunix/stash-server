@@ -16,19 +16,12 @@ const (
 
 func Authenticated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get(authHeaderKey)
-		tokenString, found := strings.CutPrefix(authHeader, authHeaderPrefix)
-		if !found {
+		_, ok := auth.UserFromContext(r.Context())
+		if !ok {
 			jsonutil.SendMessage(w, jsonutil.Unauthorized)
 			return
 		}
-		claims, err := auth.ParseJWT(tokenString)
-		if err != nil || claims == nil {
-			jsonutil.SendMessage(w, jsonutil.Unauthorized)
-			return
-		}
-		ctx := auth.WithUser(r.Context(), &claims.CurrentUser)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -44,5 +37,29 @@ func Admin(next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r)
+	})
+}
+
+func AssignUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get(authHeaderKey)
+
+		if authHeader == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		tokenString, found := strings.CutPrefix(authHeader, authHeaderPrefix)
+		if !found {
+			next.ServeHTTP(w, r)
+			return
+		}
+		claims, err := auth.ParseJWT(tokenString)
+		if err != nil || claims == nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+		ctx := auth.WithUser(r.Context(), &claims.CurrentUser)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
