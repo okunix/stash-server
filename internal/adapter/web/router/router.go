@@ -23,7 +23,71 @@ func Router(opts RouterOptions) http.Handler {
 	handler = middleware.Logger(handler)
 	handler = middleware.RealIP(handler)
 	handler = middleware.RequestID(handler)
+	handler = middleware.AddTrailingSlash(handler)
 	handler = middleware.Recovery(handler)
+
+	return handler
+}
+
+func newV1StashRouter(opts RouterOptions) http.Handler {
+	router := http.NewServeMux()
+
+	router.Handle("GET /{$}",
+		handlers.ListStashes(opts.StashService).Unwrap())
+
+	router.Handle("POST /{$}",
+		handlers.CreateStash(opts.StashService).Unwrap())
+
+	router.Handle("GET /{stash_id}",
+		handlers.GetStashByID(opts.StashService).Unwrap())
+
+	router.Handle("DELETE /{stash_id}",
+		handlers.DeleteStash(opts.StashService).Unwrap())
+
+	router.Handle("POST /{stash_id}/unlock",
+		handlers.UnlockStash(opts.StashService).Unwrap())
+
+	router.Handle("POST /{stash_id}/lock",
+		handlers.LockStash(opts.StashService).Unwrap())
+
+	router.Handle("GET /{stash_id}/secrets",
+		handlers.GetSecrets(opts.StashService).Unwrap())
+
+	router.Handle("GET /{stash_id}/secrets/{entry_name}",
+		handlers.GetSecretsEntry(opts.StashService).Unwrap())
+
+	router.Handle("PUT /{stash_id}/secrets",
+		handlers.AddSecretsEntry(opts.StashService).Unwrap())
+
+	router.Handle("DELETE /{stash_id}/secrets/{entry_name}",
+		handlers.RemoveSecretsEntry(opts.StashService).Unwrap())
+
+	router.Handle("GET /{stash_id}/members",
+		handlers.GetStashMembers(opts.StashService).Unwrap())
+
+	router.Handle("POST /{stash_id}/members",
+		handlers.AddStashMember(opts.StashService).Unwrap())
+
+	router.Handle("DELETE /{stash_id}/members/{user_id}",
+		handlers.RemoveStashMember(opts.StashService).Unwrap())
+
+	handler := http.Handler(router)
+	handler = middleware.Authenticated(handler)
+
+	return handler
+}
+
+func newV1UserRouter(opts RouterOptions) http.Handler {
+	router := http.NewServeMux()
+
+	router.Handle("GET /{user_id}",
+		handlers.GetUserByID(opts.UserService).Unwrap())
+
+	router.Handle("POST /{$}",
+		middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
+
+	handler := http.Handler(router)
+	handler = middleware.Authenticated(handler)
 
 	return handler
 }
@@ -31,76 +95,14 @@ func Router(opts RouterOptions) http.Handler {
 func newV1Router(opts RouterOptions) http.Handler {
 	router := http.NewServeMux()
 
-	router.Handle("POST /login", handlers.Login(opts.UserService).Unwrap())
+	router.Handle("/stashes/", http.StripPrefix("/stashes", newV1StashRouter(opts)))
+	router.Handle("/users/", http.StripPrefix("/users", newV1UserRouter(opts)))
 
-	// TODO: add automatic initial admin user creation
-	router.Handle("POST /signup", middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
+	router.Handle("GET /whoami/",
+		middleware.Authenticated(handlers.Whoami(opts.UserService).Unwrap()))
 
-	router.Handle(
-		"GET /stashes",
-		middleware.Authenticated(handlers.ListStashes(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"POST /stashes",
-		middleware.Authenticated(handlers.CreateStash(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"GET /stashes/{stash_id}",
-		middleware.Authenticated(handlers.GetStashByID(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"DELETE /stashes/{stash_id}",
-		middleware.Authenticated(handlers.DeleteStash(opts.StashService).Unwrap()),
-	)
-
-	router.Handle(
-		"POST /stashes/{stash_id}/unlock",
-		middleware.Authenticated(handlers.UnlockStash(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"POST /stashes/{stash_id}/lock",
-		middleware.Authenticated(handlers.LockStash(opts.StashService).Unwrap()),
-	)
-
-	router.Handle(
-		"GET /stashes/{stash_id}/secrets",
-		middleware.Authenticated(handlers.GetSecrets(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"GET /stashes/{stash_id}/secrets/{entry_name}",
-		middleware.Authenticated(handlers.GetSecretsEntry(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"PUT /stashes/{stash_id}/secrets",
-		middleware.Authenticated(handlers.AddSecretsEntry(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"DELETE /stashes/{stash_id}/secrets/{entry_name}",
-		middleware.Authenticated(handlers.RemoveSecretsEntry(opts.StashService).Unwrap()),
-	)
-
-	router.Handle(
-		"GET /stashes/{stash_id}/members",
-		middleware.Authenticated(handlers.GetStashMembers(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"POST /stashes/{stash_id}/members",
-		middleware.Authenticated(handlers.AddStashMember(opts.StashService).Unwrap()),
-	)
-	router.Handle(
-		"DELETE /stashes/{stash_id}/members/{user_id}",
-		middleware.Authenticated(handlers.RemoveStashMember(opts.StashService).Unwrap()),
-	)
-
-	router.Handle(
-		"GET /users/{user_id}",
-		middleware.Authenticated(handlers.GetUserByID(opts.UserService).Unwrap()),
-	)
-
-	router.Handle(
-		"GET /whoami",
-		middleware.Authenticated(handlers.Whoami(opts.UserService).Unwrap()),
-	)
+	router.Handle("POST /login/",
+		handlers.Login(opts.UserService).Unwrap())
 
 	return router
 }

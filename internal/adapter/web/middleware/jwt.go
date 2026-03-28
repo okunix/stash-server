@@ -33,7 +33,7 @@ func Authenticated(next http.Handler) http.Handler {
 }
 
 func Admin(next http.Handler) http.Handler {
-	return Authenticated(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		currentUser, ok := auth.UserFromContext(r.Context())
 		if !ok {
 			jsonutil.SendMessage(w, jsonutil.Unauthorized)
@@ -44,5 +44,5 @@ func Admin(next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(w, r)
-	}))
+	})
 }
