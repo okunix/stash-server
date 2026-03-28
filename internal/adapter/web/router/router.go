@@ -92,5 +92,15 @@ func newV1Router(opts RouterOptions) http.Handler {
 		middleware.Authenticated(handlers.RemoveStashMember(opts.StashService).Unwrap()),
 	)
 
+	router.Handle(
+		"GET /users/{user_id}",
+		middleware.Authenticated(handlers.GetUserByID(opts.UserService).Unwrap()),
+	)
+
+	router.Handle(
+		"GET /whoami",
+		middleware.Authenticated(handlers.Whoami(opts.UserService).Unwrap()),
+	)
+
 	return router
 }
