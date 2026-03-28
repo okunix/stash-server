@@ -34,10 +34,10 @@ type StashService interface {
 type UserService interface {
 	GetUserToken(ctx context.Context, req dto.GetUserTokenRequest) (string, error)
 
-	GetCurrentUser(ctx context.Context) (dto.UserResponse, error)
-	GetUserByID(ctx context.Context, id uuid.UUID) (dto.UserResponse, error)
-	GetUserByUsername(ctx context.Context, username string) (dto.UserResponse, error)
-	InitializeAdminUser(ctx context.Context) (dto.InitAdminResponse, error)
+	GetCurrentUser(ctx context.Context) (*dto.UserResponse, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (*dto.UserResponse, error)
+	GetUserByUsername(ctx context.Context, username string) (*dto.UserResponse, error)
+	InitializeAdminUser(ctx context.Context) (*dto.InitAdminResponse, error)
 	ChangePassword(ctx context.Context, req dto.ChangePasswordRequest) error
 
 	// admin cli functions

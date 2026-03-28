@@ -27,7 +27,11 @@ func NewUserService(params UserServiceParams) ports.UserService {
 	}
 }
 
-func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) error {
+func (u *userService) createUserWithRole(
+	ctx context.Context,
+	req dto.CreateUserRequest,
+	role string,
+) error {
 	if problems, ok := req.Validate(); !ok {
 		return ports.NewValidationError(problems)
 	}
@@ -41,7 +45,7 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest)
 	_, err = u.userRepo.AddUser(ctx, user.AddUserParams{
 		Username:     req.Username,
 		PasswordHash: passwordHash,
-		Role:         user.RoleUser,
+		Role:         role,
 	})
 	if err != nil {
 		return ports.BadRequestError(err)
@@ -49,10 +53,13 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest)
 	return nil
 }
 
-// use only in admin cli
+func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) error {
+	return u.createUserWithRole(ctx, req, user.RoleUser)
+}
+
 func (u *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	slog.Info("deleting user", "id", userID)
-	if err := u.DeleteUser(ctx, userID); err != nil {
+	if err := u.userRepo.DeleteUser(ctx, userID); err != nil {
 		return ports.NotFoundError(err)
 	}
 	return nil
@@ -91,25 +98,91 @@ func (u *userService) UnlockUser(ctx context.Context, userID uuid.UUID) error {
 	panic("unimplemented")
 }
 
-func (u *userService) GetCurrentUser(ctx context.Context) (dto.UserResponse, error) {
-	panic("unimplemented")
+func (u *userService) GetCurrentUser(ctx context.Context) (*dto.UserResponse, error) {
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, ports.UnauthorizedError(nil)
+	}
+	return u.GetUserByID(ctx, currentUser.UserID)
 }
 
-func (u *userService) GetUserByID(ctx context.Context, id uuid.UUID) (dto.UserResponse, error) {
-	panic("unimplemented")
+func (u *userService) GetUserByID(ctx context.Context, id uuid.UUID) (*dto.UserResponse, error) {
+	usr, err := u.userRepo.GetUserByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return dto.NewUserResponse(usr), nil
 }
 
 func (u *userService) GetUserByUsername(
 	ctx context.Context,
 	username string,
-) (dto.UserResponse, error) {
-	panic("unimplemented")
+) (*dto.UserResponse, error) {
+	usr, err := u.userRepo.GetUserByUsername(ctx, username)
+	if err != nil {
+		return nil, err
+	}
+	return dto.NewUserResponse(usr), nil
 }
 
-func (u *userService) InitializeAdminUser(ctx context.Context) (dto.InitAdminResponse, error) {
-	panic("unimplemented")
+func (u *userService) InitializeAdminUser(ctx context.Context) (*dto.InitAdminResponse, error) {
+	ok, err := u.userRepo.IsAdminPresent(ctx)
+	if err != nil {
+		return nil, ports.InternalError(err)
+	}
+	if ok {
+		return nil, nil
+	}
+	initialAdminPasswordLength := 23
+	initialAdminPassword := crypto.RandomSpecialString(initialAdminPasswordLength)
+	req := dto.CreateUserRequest{
+		Username: "admin_" + crypto.RandomAlphaNumericString(5),
+		Password: initialAdminPassword,
+	}
+	err = u.createUserWithRole(ctx, req, user.RoleAdmin)
+	return &dto.InitAdminResponse{
+		Username: req.Username,
+		Password: req.Password,
+	}, err
 }
 
 func (u *userService) ChangePassword(ctx context.Context, req dto.ChangePasswordRequest) error {
-	panic("unimplemented")
+	currentUser, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return ports.UnauthorizedError(nil)
+	}
+	userID := currentUser.UserID
+	if req.UserID != nil {
+		if currentUser.Role != user.RoleAdmin {
+			return ports.ForbiddenError(nil)
+		}
+		userID = *req.UserID
+	}
+	userFromRepo, err := u.userRepo.GetUserByID(ctx, userID)
+	if err != nil {
+		return ports.NotFoundError(err)
+	}
+
+	ok, err = crypto.ComparePasswordHash(userFromRepo.PasswordHash, req.OldPassword)
+	if err != nil {
+		return ports.InternalError(err)
+	}
+	if !ok {
+		return ports.BadRequestError(errors.New("old password is incorrect"))
+	}
+
+	newPasswordHash, _ := crypto.HashPassword(req.NewPassword)
+	_, err = u.userRepo.UpdateUser(
+		ctx,
+		user.UpdateUserParams{
+			ID:           userFromRepo.ID,
+			PasswordHash: newPasswordHash,
+			Locked:       userFromRepo.Locked,
+			ExpiredAt:    userFromRepo.ExpiredAt,
+		},
+	)
+	if err != nil {
+		return ports.InternalError(err)
+	}
+	return nil
 }
