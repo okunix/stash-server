@@ -211,9 +211,36 @@ func (u *userService) ChangePassword(ctx context.Context, req dto.ChangePassword
 	return nil
 }
 
-func (u *userService) GetUsers(ctx context.Context) ([]*dto.UserResponse, error) {
-	if err := u.checkAdminUser(ctx); err != nil {
-		return nil, err
+func (u *userService) GetUsers(
+	ctx context.Context,
+	req dto.GetUsersRequest,
+) (*dto.GetUsersResponse, error) {
+	_, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, ports.UnauthorizedError(nil)
 	}
-	return nil, nil
+
+	users, total, err := u.userRepo.ListUsers(ctx,
+		user.ListUsersParams{
+			Limit:  req.Limit,
+			Offset: req.Offset,
+		})
+	if err != nil {
+		return nil, ports.InternalError(err)
+	}
+
+	resp := dto.GetUsersResponse{
+		Page: &dto.Page{
+			Limit:  req.Limit,
+			Offset: req.Offset,
+			Total:  total,
+		},
+		Content: []*dto.UserResponse{},
+	}
+
+	for _, u := range users {
+		resp.Content = append(resp.Content, dto.NewUserResponse(u))
+	}
+
+	return &resp, nil
 }

@@ -82,6 +82,9 @@ func newV1UserRouter(opts RouterOptions) http.Handler {
 	router := chi.NewRouter()
 	router.Use(middleware.Authenticated)
 
+	router.Handle("GET /",
+		handlers.GetUsers(opts.UserService).Unwrap())
+
 	router.Handle("POST /",
 		middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
 

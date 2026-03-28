@@ -71,3 +71,13 @@ func NewUserResponse(d *user.User) *UserResponse {
 		ExpiredAt: d.ExpiredAt,
 	}
 }
+
+type GetUsersResponse struct {
+	Page    *Page           `json:"page,omitempty"`
+	Content []*UserResponse `json:"content"`
+}
+
+type GetUsersRequest struct {
+	Limit  uint
+	Offset uint
+}
