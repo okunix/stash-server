@@ -20,6 +20,7 @@ import (
 )
 
 func Run(configFilePath string) {
+	ctx := context.Background()
 	// reading config file
 	conf, err := config.ReadFromFile(configFilePath)
 	if err != nil {
@@ -50,7 +51,7 @@ func Run(configFilePath string) {
 		Database:   conf.PostgresConfig.Database,
 		Migrations: migrations.Migrations(),
 	}
-	err = postgres.Init(context.Background(), postgresInitParams)
+	err = postgres.Init(ctx, postgresInitParams)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to initiate db connection: %s\n", err.Error())
 		os.Exit(1)
@@ -63,6 +64,19 @@ func Run(configFilePath string) {
 			UserRepository: userRepository,
 		},
 	)
+
+	// initializing admin user
+	createdAdminUser, err := userService.InitializeAdminUser(ctx)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to initialize admin user: %s\n", err.Error())
+		os.Exit(1)
+	}
+	if createdAdminUser != nil {
+		slog.Warn("created admin user",
+			"username", createdAdminUser.Username,
+			"password", createdAdminUser.Password,
+		)
+	}
 
 	// initializing cache storage
 	ephemeralStashStorage, err := cache.NewCache(5)
@@ -107,7 +121,7 @@ func Run(configFilePath string) {
 	<-signalCh
 	slog.Info("shutting down application")
 
-	timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	timeout, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(timeout); err != nil &&
 		!errors.Is(err, http.ErrServerClosed) {
