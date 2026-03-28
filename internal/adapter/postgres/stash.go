@@ -317,7 +317,7 @@ const (
 
 func (s *stashRepository) GetStashByName(
 	ctx context.Context,
-	maintainerID, name string,
+	maintainerID uuid.UUID, name string,
 ) (*stash.Stash, error) {
 	model, err := scanStashSQLRow(s.db.QueryRowContext(ctx, getStashByNameSQL, maintainerID, name))
 	return model.Domain(), err
