@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
+	"gitlab.com/stash-password-manager/stash-server/internal/core/dto"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
 )
 
@@ -36,5 +37,19 @@ func Whoami(userService ports.UserService) apiFunc {
 			return err
 		}
 		return jsonutil.Write(w, http.StatusOK, resp)
+	}
+}
+
+func ChangePassword(userService ports.UserService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		req, err := jsonutil.Read[dto.ChangePasswordRequest](r.Body)
+		if err != nil {
+			return ports.BadRequestError(nil)
+		}
+		if err := userService.ChangePassword(ctx, req); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Ok)
 	}
 }

@@ -51,6 +51,14 @@ type ChangePasswordRequest struct {
 	NewPassword string     `json:"new_password"`
 }
 
+func (req ChangePasswordRequest) Validate() (map[string]string, bool) {
+	problems := make(map[string]string)
+	if err := user.ValidatePassword(req.NewPassword); err != nil {
+		problems["new_password"] = err.Error()
+	}
+	return problems, len(problems) == 0
+}
+
 func NewUserResponse(d *user.User) *UserResponse {
 	if d == nil {
 		return nil

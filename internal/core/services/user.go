@@ -151,6 +151,11 @@ func (u *userService) ChangePassword(ctx context.Context, req dto.ChangePassword
 	if !ok {
 		return ports.UnauthorizedError(nil)
 	}
+
+	if problems, ok := req.Validate(); !ok {
+		return ports.NewValidationError(problems)
+	}
+
 	userID := currentUser.UserID
 	if req.UserID != nil {
 		if currentUser.Role != user.RoleAdmin {
