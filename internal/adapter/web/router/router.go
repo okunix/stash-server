@@ -103,7 +103,7 @@ func newV1Router(opts RouterOptions) http.Handler {
 	router.Handle("POST /login",
 		handlers.Login(opts.UserService).Unwrap())
 
-	router.Handle("PATCH /change_password",
+	router.Handle("PATCH /change-password",
 		middleware.Authenticated(handlers.ChangePassword(opts.UserService).Unwrap()))
 
 	return router
