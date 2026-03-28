@@ -7,7 +7,7 @@ import (
 
 const (
 	alphaNumericCharset string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	specialCharset      string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+	specialCharset      string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 )
 
 func RandomBytes(size int) []byte {
@@ -16,7 +16,7 @@ func RandomBytes(size int) []byte {
 	return nonce
 }
 
-func RandomPasswordWithCharset(size int, charset string) string {
+func RandomStringWithCharset(size int, charset string) string {
 	b := RandomBytes(size)
 	var pass strings.Builder
 	pass.Grow(size)
@@ -26,10 +26,10 @@ func RandomPasswordWithCharset(size int, charset string) string {
 	return pass.String()
 }
 
-func RandomAlphaNumericPassword(size int) string {
-	return RandomPasswordWithCharset(size, alphaNumericCharset)
+func RandomAlphaNumericString(size int) string {
+	return RandomStringWithCharset(size, alphaNumericCharset)
 }
 
-func RandomSpecialPassword(size int) string {
-	return RandomPasswordWithCharset(size, specialCharset)
+func RandomSpecialString(size int) string {
+	return RandomStringWithCharset(size, specialCharset)
 }
