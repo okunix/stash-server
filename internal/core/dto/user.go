@@ -41,14 +41,14 @@ type UserResponse struct {
 }
 
 type InitAdminResponse struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
-	Password string    `json:"password"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type ChangePasswordRequest struct {
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
+	UserID      *uuid.UUID `json:"user_id,omitempty"`
+	OldPassword string     `json:"old_password"`
+	NewPassword string     `json:"new_password"`
 }
 
 func NewUserResponse(d *user.User) *UserResponse {
