@@ -64,14 +64,14 @@ func scanUserSQLRow(row scannable) (*userSQLModel, error) {
 }
 
 const addUserStmt = `
-INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, password_hash, locked, role, expired_at, created_at;
+INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id, username, password_hash, locked, role, expired_at, created_at;
 `
 
 func (u *userRepository) AddUser(
 	ctx context.Context,
 	params user.AddUserParams,
 ) (*user.User, error) {
-	row := u.db.QueryRowContext(ctx, addUserStmt, params.Username, params.PasswordHash)
+	row := u.db.QueryRowContext(ctx, addUserStmt, params.Username, params.PasswordHash, params.Role)
 	userModel, err := scanUserSQLRow(row)
 	return userModel.Domain(), err
 }
