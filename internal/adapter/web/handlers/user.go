@@ -8,13 +8,17 @@ import (
 	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
 )
 
-func GetUserByID(userService ports.UserService) apiFunc {
+func GetUserByUsernameOrID(userService ports.UserService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 		userID := r.PathValue("user_id")
 		userUUID, err := uuid.Parse(userID)
 		if err != nil {
-			return ports.NotFoundError(nil)
+			resp, err := userService.GetUserByUsername(ctx, userID)
+			if err != nil {
+				return err
+			}
+			return jsonutil.Write(w, http.StatusOK, resp)
 		}
 		resp, err := userService.GetUserByID(ctx, userUUID)
 		if err != nil {

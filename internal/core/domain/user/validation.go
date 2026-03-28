@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -31,8 +33,11 @@ func ValidateUsername(username string) error {
 	if len(username) < 2 {
 		return errors.New("Username is too short")
 	}
-	if len(username) > 20 {
+	if len(username) > 40 {
 		return errors.New("Username is too long")
+	}
+	if _, err := uuid.Parse(username); err == nil {
+		return errors.New("Username must not be valid uuid")
 	}
 	if !usernameRegex.MatchString(username) {
 		return ErrInvalidUsername

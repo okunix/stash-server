@@ -81,11 +81,11 @@ func newV1UserRouter(opts RouterOptions) http.Handler {
 	router := chi.NewRouter()
 	router.Use(middleware.Authenticated)
 
-	router.Handle("POST /{$}",
+	router.Handle("POST /",
 		middleware.Admin(handlers.CreateUser(opts.UserService).Unwrap()))
 
 	router.Handle("GET /{user_id}",
-		handlers.GetUserByID(opts.UserService).Unwrap())
+		handlers.GetUserByUsernameOrID(opts.UserService).Unwrap())
 
 	return router
 }

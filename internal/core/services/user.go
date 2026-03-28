@@ -120,7 +120,7 @@ func (u *userService) GetUserByUsername(
 ) (*dto.UserResponse, error) {
 	usr, err := u.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
-		return nil, err
+		return nil, ports.NotFoundError(errors.New("user not found"))
 	}
 	return dto.NewUserResponse(usr), nil
 }
