@@ -55,13 +55,13 @@ func ChangePassword(userService ports.UserService) apiFunc {
 	}
 }
 
-func GetUsers(userService ports.UserService) apiFunc {
+func ListUsers(userService ports.UserService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
 		limit, _ := webutil.GetUintQueryParam(r, "limit", 32, 50)
 		offset, _ := webutil.GetUintQueryParam(r, "offset", 32, 0)
-		req := dto.GetUsersRequest{Limit: uint(limit), Offset: uint(offset)}
-		resp, err := userService.GetUsers(ctx, req)
+		req := dto.ListUsersRequest{Limit: uint(limit), Offset: uint(offset)}
+		resp, err := userService.ListUsers(ctx, req)
 		if err != nil {
 			return err
 		}

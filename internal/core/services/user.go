@@ -211,10 +211,10 @@ func (u *userService) ChangePassword(ctx context.Context, req dto.ChangePassword
 	return nil
 }
 
-func (u *userService) GetUsers(
+func (u *userService) ListUsers(
 	ctx context.Context,
-	req dto.GetUsersRequest,
-) (*dto.GetUsersResponse, error) {
+	req dto.ListUsersRequest,
+) (*dto.ListUsersResponse, error) {
 	_, ok := auth.UserFromContext(ctx)
 	if !ok {
 		return nil, ports.UnauthorizedError(nil)
@@ -229,17 +229,17 @@ func (u *userService) GetUsers(
 		return nil, ports.InternalError(err)
 	}
 
-	resp := dto.GetUsersResponse{
+	resp := dto.ListUsersResponse{
 		Page: &dto.Page{
 			Limit:  req.Limit,
 			Offset: req.Offset,
 			Total:  total,
 		},
-		Content: []*dto.UserResponse{},
+		Result: []*dto.UserResponse{},
 	}
 
 	for _, u := range users {
-		resp.Content = append(resp.Content, dto.NewUserResponse(u))
+		resp.Result = append(resp.Result, dto.NewUserResponse(u))
 	}
 
 	return &resp, nil

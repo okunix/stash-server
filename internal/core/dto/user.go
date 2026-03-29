@@ -72,12 +72,12 @@ func NewUserResponse(d *user.User) *UserResponse {
 	}
 }
 
-type GetUsersResponse struct {
-	Page    *Page           `json:"page,omitempty"`
-	Content []*UserResponse `json:"content"`
+type ListUsersResponse struct {
+	Page   *Page           `json:"page,omitempty"`
+	Result []*UserResponse `json:"result"`
 }
 
-type GetUsersRequest struct {
+type ListUsersRequest struct {
 	Limit  uint
 	Offset uint
 }
