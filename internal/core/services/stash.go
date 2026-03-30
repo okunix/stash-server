@@ -279,8 +279,36 @@ func (s *stashService) ListStashes(
 	return resp, nil
 }
 
-func (s *stashService) UpdateStash(ctx context.Context, req dto.UpdateStashRequest) error {
-	panic("unimplemented")
+func (s *stashService) UpdateStash(
+	ctx context.Context,
+	stashID uuid.UUID,
+	req dto.UpdateStashRequest,
+) error {
+	st, err := s.getStashIfMemberOrMaintainer(ctx, stashID)
+	if err != nil {
+		return err
+	}
+	if problems, ok := req.Validate(); !ok {
+		return ports.NewValidationError(problems)
+	}
+	name := st.Name
+	if req.Name != nil {
+		name = *req.Name
+	}
+	desc := st.Description
+	if req.Description != nil {
+		desc = req.Description
+	}
+	_, err = s.stashRepo.UpdateStash(ctx,
+		stash.UpdateStashParams{
+			StashID:     stashID,
+			Name:        name,
+			Description: desc,
+		})
+	if err != nil {
+		return ports.BadRequestError(err)
+	}
+	return nil
 }
 
 func (s *stashService) GetSecrets(

@@ -57,14 +57,16 @@ func (req CreateStashRequest) Validate() (map[string]string, bool) {
 }
 
 type UpdateStashRequest struct {
-	Name        string  `json:"name"`
+	Name        *string `json:"name"`
 	Description *string `json:"description"`
 }
 
 func (req UpdateStashRequest) Validate() (map[string]string, bool) {
 	problems := make(map[string]string)
-	if err := stash.ValidateName(req.Name); err != nil {
-		problems["name"] = err.Error()
+	if req.Name != nil {
+		if err := stash.ValidateName(*req.Name); err != nil {
+			problems["name"] = err.Error()
+		}
 	}
 	if err := stash.ValidateDescription(req.Description); err != nil {
 		problems["description"] = err.Error()

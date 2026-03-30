@@ -14,7 +14,7 @@ type StashService interface {
 	GetStashByID(ctx context.Context, stashID uuid.UUID) (*dto.StashResponse, error)
 	GetStashByName(ctx context.Context, name string) (*dto.StashResponse, error)
 	CreateStash(ctx context.Context, req dto.CreateStashRequest) error
-	UpdateStash(ctx context.Context, req dto.UpdateStashRequest) error
+	UpdateStash(ctx context.Context, stashID uuid.UUID, req dto.UpdateStashRequest) error
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error
 
 	ListStashMembers(ctx context.Context, stashID uuid.UUID) (*dto.ListStashMemberResponse, error)

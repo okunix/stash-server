@@ -292,3 +292,23 @@ func RemoveStashMember(stashService ports.StashService) apiFunc {
 		return jsonutil.SendMessage(w, jsonutil.Ok)
 	}
 }
+
+func UpdateStash(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.NotFoundError(nil)
+		}
+
+		req, err := jsonutil.Read[dto.UpdateStashRequest](r.Body)
+		if err != nil {
+			return ports.BadRequestError(nil)
+		}
+		if err := stashService.UpdateStash(ctx, stashUUID, req); err != nil {
+			return err
+		}
+		return jsonutil.SendMessage(w, jsonutil.Ok)
+	}
+}

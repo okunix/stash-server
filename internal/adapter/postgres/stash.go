@@ -146,7 +146,7 @@ func (s *stashRepository) UpdateStash(
 	params stash.UpdateStashParams,
 ) (*stash.Stash, error) {
 	stashUpdateSQLResp, err := scanStashSQLRow(
-		s.db.QueryRowContext(ctx, updateStashStmt, params.Name, params.Description),
+		s.db.QueryRowContext(ctx, updateStashStmt, params.Name, params.Description, params.StashID),
 	)
 	return stashUpdateSQLResp.Domain(), err
 
