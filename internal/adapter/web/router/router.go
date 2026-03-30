@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/handlers"
+	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/middleware"
 	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
 )
@@ -28,6 +29,14 @@ func Router(opts RouterOptions) http.Handler {
 	router.Use(middleware.Recovery)
 
 	router.Mount("/api/v1/", newV1Router(opts))
+
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		jsonutil.SendMessage(w, jsonutil.NotFound)
+	})
+
+	router.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
+		jsonutil.SendMessage(w, jsonutil.MethodNotAllowed)
+	})
 
 	return router
 }
@@ -97,20 +106,27 @@ func newV1UserRouter(opts RouterOptions) http.Handler {
 	return router
 }
 
+func newV1AuthRouter(opts RouterOptions) http.Handler {
+	router := chi.NewRouter()
+
+	router.Handle("POST /login",
+		handlers.Login(opts.UserService).Unwrap())
+
+	router.Handle("GET /whoami",
+		middleware.Authenticated(handlers.Whoami(opts.UserService).Unwrap()))
+
+	router.Handle("PATCH /change-password",
+		middleware.Authenticated(handlers.ChangePassword(opts.UserService).Unwrap()))
+
+	return router
+}
+
 func newV1Router(opts RouterOptions) http.Handler {
 	router := chi.NewRouter()
 
 	router.Mount("/users", newV1UserRouter(opts))
 	router.Mount("/stashes", newV1StashRouter(opts))
-
-	router.Handle("GET /whoami",
-		middleware.Authenticated(handlers.Whoami(opts.UserService).Unwrap()))
-
-	router.Handle("POST /login",
-		handlers.Login(opts.UserService).Unwrap())
-
-	router.Handle("PATCH /change-password",
-		middleware.Authenticated(handlers.ChangePassword(opts.UserService).Unwrap()))
+	router.Mount("/auth", newV1AuthRouter(opts))
 
 	return router
 }

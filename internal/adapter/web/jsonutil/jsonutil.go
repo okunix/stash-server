@@ -46,6 +46,7 @@ var (
 	TooManyRequests     = NewMessage(http.StatusTooManyRequests, "Too Many Requests")
 	InternalServerError = NewMessage(http.StatusInternalServerError, "Internal Server Error")
 	ValidationError     = NewMessage(http.StatusBadRequest, "Validation Error")
+	MethodNotAllowed    = NewMessage(http.StatusMethodNotAllowed, "Method Not Allowed")
 )
 
 func WithDetail(m Message, detail any) Message {
