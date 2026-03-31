@@ -38,6 +38,11 @@ func Router(opts RouterOptions) http.Handler {
 		jsonutil.SendMessage(w, jsonutil.MethodNotAllowed)
 	})
 
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("healthy"))
+	})
+
 	return router
 }
 
