@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/handlers"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
 	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/middleware"
@@ -27,6 +28,12 @@ func Router(opts RouterOptions) http.Handler {
 	router.Use(chiMiddleware.CleanPath)
 	router.Use(chiMiddleware.StripSlashes)
 	router.Use(middleware.Recovery)
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
+		MaxAge:         300,
+	}))
 
 	router.Mount("/api/v1/", newV1Router(opts))
 
