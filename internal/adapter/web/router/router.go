@@ -20,20 +20,22 @@ type RouterOptions struct {
 func Router(opts RouterOptions) http.Handler {
 	router := chi.NewRouter()
 
-	router.Use(middleware.NoCache)
-	router.Use(middleware.Logger)
-	router.Use(middleware.RealIP)
-	router.Use(middleware.RequestID)
-	router.Use(middleware.AssignUser)
-	router.Use(chiMiddleware.CleanPath)
-	router.Use(chiMiddleware.StripSlashes)
-	router.Use(middleware.Recovery)
-	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"https://*", "http://*"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
-		MaxAge:         300,
-	}))
+	router.Use(
+		middleware.Recovery,
+		chiMiddleware.StripSlashes,
+		chiMiddleware.CleanPath,
+		middleware.AssignUser,
+		chiMiddleware.RequestID,
+		middleware.RealIP,
+		cors.Handler(cors.Options{
+			AllowedOrigins: []string{"https://*", "http://*"},
+			AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+			AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
+			MaxAge:         300,
+		}),
+		middleware.Logger,
+		middleware.NoCache,
+	)
 
 	router.Mount("/api/v1/", newV1Router(opts))
 
