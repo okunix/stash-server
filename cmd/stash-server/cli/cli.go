@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"gitlab.com/stash-password-manager/stash-server/cmd/stash-server/app"
-	"gitlab.com/stash-password-manager/stash-server/version"
+	"github.com/okunix/stash-server/cmd/stash-server/app"
+	"github.com/okunix/stash-server/version"
 )
 
 var rootCmd = &cobra.Command{

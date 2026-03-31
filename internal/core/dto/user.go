@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/user"
+	"github.com/okunix/stash-server/internal/core/domain/user"
 )
 
 type GetUserTokenRequest struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/dto"
+	"github.com/okunix/stash-server/internal/core/dto"
 )
 
 // current user information is transfered using context

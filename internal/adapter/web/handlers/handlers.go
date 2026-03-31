@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/webutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
+	"github.com/okunix/stash-server/internal/adapter/web/webutil"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 type apiFunc func(w http.ResponseWriter, r *http.Request) error

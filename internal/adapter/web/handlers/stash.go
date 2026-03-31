@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/webutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/dto"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
+	"github.com/okunix/stash-server/internal/adapter/web/webutil"
+	"github.com/okunix/stash-server/internal/core/dto"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 // add update stash and delete stash handlers

@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"gitlab.com/stash-password-manager/stash-server/cmd/stash-server/config"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/cache"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/postgres"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/services"
-	"gitlab.com/stash-password-manager/stash-server/migrations"
+	"github.com/okunix/stash-server/cmd/stash-server/config"
+	"github.com/okunix/stash-server/internal/adapter/cache"
+	"github.com/okunix/stash-server/internal/adapter/postgres"
+	"github.com/okunix/stash-server/internal/adapter/web"
+	"github.com/okunix/stash-server/internal/core/services"
+	"github.com/okunix/stash-server/migrations"
 )
 
 func Run(configFilePath string) {

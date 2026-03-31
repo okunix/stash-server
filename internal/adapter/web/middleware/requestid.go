@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/webutil"
+	"github.com/okunix/stash-server/internal/adapter/web/webutil"
 )
 
 func RequestID(next http.Handler) http.Handler {

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/user"
+	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
+	"github.com/okunix/stash-server/internal/core/auth"
+	"github.com/okunix/stash-server/internal/core/domain/user"
 )
 
 const (

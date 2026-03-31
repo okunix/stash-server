@@ -6,10 +6,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/handlers"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/middleware"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/adapter/web/handlers"
+	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
+	"github.com/okunix/stash-server/internal/adapter/web/middleware"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 type RouterOptions struct {

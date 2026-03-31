@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/stash"
+	"github.com/okunix/stash-server/internal/core/domain/stash"
 )
 
 type StashResponse struct {

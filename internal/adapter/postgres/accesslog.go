@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"time"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/accesslog"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/core/domain/accesslog"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 type accessLogRepository struct {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/webutil"
+	"github.com/okunix/stash-server/internal/adapter/web/webutil"
 )
 
 type wrappedWriter struct {

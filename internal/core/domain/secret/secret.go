@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/crypto"
+	"github.com/okunix/stash-server/internal/core/crypto"
 )
 
 // in-memory data structure

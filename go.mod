@@ -1,4 +1,4 @@
-module gitlab.com/stash-password-manager/stash-server
+module github.com/okunix/stash-server
 
 go 1.25.7
 

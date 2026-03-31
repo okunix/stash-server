@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/jsonutil"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/dto"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
+	"github.com/okunix/stash-server/internal/core/dto"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 // add get current user(whoami), update password and delete user handlers

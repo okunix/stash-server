@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/stash"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/core/domain/stash"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 type stashSQLModel struct {

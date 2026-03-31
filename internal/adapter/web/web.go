@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
-	"gitlab.com/stash-password-manager/stash-server/internal/adapter/web/router"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/adapter/web/router"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 type ServerOptions struct {

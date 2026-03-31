@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/accesslog"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/secret"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/stash"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/user"
+	"github.com/okunix/stash-server/internal/core/domain/accesslog"
+	"github.com/okunix/stash-server/internal/core/domain/secret"
+	"github.com/okunix/stash-server/internal/core/domain/stash"
+	"github.com/okunix/stash-server/internal/core/domain/user"
 )
 
 type AccessLogRepository interface {

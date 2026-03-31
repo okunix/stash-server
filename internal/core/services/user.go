@@ -6,11 +6,11 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/auth"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/crypto"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/domain/user"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/dto"
-	"gitlab.com/stash-password-manager/stash-server/internal/core/ports"
+	"github.com/okunix/stash-server/internal/core/auth"
+	"github.com/okunix/stash-server/internal/core/crypto"
+	"github.com/okunix/stash-server/internal/core/domain/user"
+	"github.com/okunix/stash-server/internal/core/dto"
+	"github.com/okunix/stash-server/internal/core/ports"
 )
 
 type userService struct {
