@@ -38,6 +38,8 @@ type SecretRepository interface {
 
 type StashRepository interface {
 	ListStashes(ctx context.Context, params stash.ListStashesParams) ([]*stash.Stash, int64, error)
+	ListMaintainerStashes(ctx context.Context, maintainerID uuid.UUID) ([]*stash.Stash, error)
+	ListMemberStashes(ctx context.Context, userID uuid.UUID) ([]*stash.Stash, error)
 	GetStashByID(ctx context.Context, id uuid.UUID) (*stash.Stash, error)
 	GetStashByName(ctx context.Context, maintainerID uuid.UUID, name string) (*stash.Stash, error)
 	CreateStash(ctx context.Context, params stash.CreateStashParams) (*stash.Stash, error)

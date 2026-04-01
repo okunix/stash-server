@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
-	"github.com/okunix/stash-server/internal/adapter/web/webutil"
 	"github.com/okunix/stash-server/internal/core/dto"
 	"github.com/okunix/stash-server/internal/core/ports"
 )
@@ -67,14 +66,7 @@ func GetStashByID(stashService ports.StashService) apiFunc {
 func ListStashes(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
-		limit, _ := webutil.GetUintQueryParam(r, "limit", 32, 30)
-		offset, _ := webutil.GetUintQueryParam(r, "offset", 32, 0)
-		req := dto.ListStashesRequest{
-			Limit:  uint(limit),
-			Offset: uint(offset),
-			Search: r.URL.Query().Get("search"),
-		}
-		res, err := stashService.ListStashes(ctx, req)
+		res, err := stashService.ListMyStashes(ctx)
 		if err != nil {
 			return err
 		}
@@ -310,5 +302,22 @@ func UpdateStash(stashService ports.StashService) apiFunc {
 			return err
 		}
 		return jsonutil.SendMessage(w, jsonutil.Ok)
+	}
+}
+
+func GetStashByName(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		maintainerID := r.PathValue("maintainer_id")
+		maintainerUUID, err := uuid.Parse(maintainerID)
+		if err != nil {
+			return ports.NotFoundError(nil)
+		}
+		stashName := r.PathValue("stash_name")
+		resp, err := stashService.GetStashByName(ctx, maintainerUUID, stashName)
+		if err != nil {
+			return err
+		}
+		return jsonutil.Write(w, 200, resp)
 	}
 }

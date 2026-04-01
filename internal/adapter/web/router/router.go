@@ -101,6 +101,9 @@ func newV1StashRouter(opts RouterOptions) http.Handler {
 	router.Handle("PATCH /{stash_id}",
 		handlers.UpdateStash(opts.StashService).Unwrap())
 
+	router.Handle("GET /by-name/{maintainer_id}/{stash_name}",
+		handlers.GetStashByName(opts.StashService).Unwrap())
+
 	return router
 }
 

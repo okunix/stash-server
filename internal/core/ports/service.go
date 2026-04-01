@@ -12,7 +12,11 @@ import (
 type StashService interface {
 	ListStashes(ctx context.Context, req dto.ListStashesRequest) (*dto.ListStashResponse, error)
 	GetStashByID(ctx context.Context, stashID uuid.UUID) (*dto.StashResponse, error)
-	GetStashByName(ctx context.Context, name string) (*dto.StashResponse, error)
+	GetStashByName(
+		ctx context.Context,
+		maintainerID uuid.UUID,
+		name string,
+	) (*dto.StashResponse, error)
 	CreateStash(ctx context.Context, req dto.CreateStashRequest) error
 	UpdateStash(ctx context.Context, stashID uuid.UUID, req dto.UpdateStashRequest) error
 	DeleteStash(ctx context.Context, stashID uuid.UUID) error
@@ -29,6 +33,8 @@ type StashService interface {
 
 	Unlock(ctx context.Context, stashID uuid.UUID, password string) error
 	Lock(ctx context.Context, stashID uuid.UUID) error
+
+	ListMyStashes(ctx context.Context) (*dto.ListMyStashesResponse, error)
 }
 
 type UserService interface {

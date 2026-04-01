@@ -126,9 +126,14 @@ func (s *stashService) AddStashMember(
 	ctx context.Context,
 	req dto.AddStashMemberRequest,
 ) error {
-	if _, err := s.isStashMaintainer(ctx, req.StashID); err != nil {
+	currentUser, err := s.isStashMaintainer(ctx, req.StashID)
+	if err != nil {
 		return err
 	}
+	if req.UserID == currentUser.UserID {
+		return ports.BadRequestError(errors.New("you can't add yourself as a member"))
+	}
+
 	params := stash.AddMemberParams{UserID: req.UserID, StashID: req.StashID}
 	if err := s.stashRepo.AddMember(ctx, params); err != nil {
 		return ports.NotFoundError(nil)
@@ -501,16 +506,52 @@ func (s *stashService) commitDataUpdate(
 
 func (s *stashService) GetStashByName(
 	ctx context.Context,
+	maintainerID uuid.UUID,
 	name string,
 ) (*dto.StashResponse, error) {
+	if _, ok := auth.UserFromContext(ctx); !ok {
+		return nil, ports.UnauthorizedError(nil)
+	}
+	st, err := s.stashRepo.GetStashByName(ctx, maintainerID, name)
+	if err != nil {
+		return nil, ports.NotFoundError(nil)
+	}
+	if _, err := s.isStashMemberOrMaintainer(ctx, st.ID); err != nil {
+		return nil, err
+	}
+	_, err = s.secretRepo.GetSecretByStashID(ctx, st.ID)
+	return dto.NewStashResponse(st, err != nil), nil
+}
+
+func (s *stashService) ListMyStashes(ctx context.Context) (*dto.ListMyStashesResponse, error) {
 	currentUser, ok := auth.UserFromContext(ctx)
 	if !ok {
 		return nil, ports.UnauthorizedError(nil)
 	}
-	st, err := s.stashRepo.GetStashByName(ctx, currentUser.UserID, name)
+	maintainerStashes, err := s.stashRepo.ListMaintainerStashes(ctx, currentUser.UserID)
 	if err != nil {
-		return nil, ports.NotFoundError(nil)
+		return nil, ports.InternalError(err)
 	}
-	_, err = s.secretRepo.GetSecretByStashID(ctx, st.ID)
-	return dto.NewStashResponse(st, err != nil), nil
+	memberStashes, err := s.stashRepo.ListMemberStashes(ctx, currentUser.UserID)
+	if err != nil {
+		return nil, ports.InternalError(err)
+	}
+
+	maintainerStashesResp := make([]*dto.StashResponse, 0, len(maintainerStashes))
+	memberStashesResp := make([]*dto.StashResponse, 0, len(memberStashes))
+	for _, v := range maintainerStashes {
+		_, err = s.secretRepo.GetSecretByStashID(ctx, v.ID)
+		maintainerStashesResp = append(
+			maintainerStashesResp,
+			dto.NewStashResponse(v, err != nil),
+		)
+	}
+	for _, v := range memberStashes {
+		_, err := s.secretRepo.GetSecretByStashID(ctx, v.ID)
+		memberStashesResp = append(memberStashesResp, dto.NewStashResponse(v, err != nil))
+	}
+	return &dto.ListMyStashesResponse{
+		Maintainer: maintainerStashesResp,
+		Member:     memberStashesResp,
+	}, nil
 }

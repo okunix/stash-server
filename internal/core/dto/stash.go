@@ -105,3 +105,8 @@ type RemoveStashMemberRequest struct {
 	StashID uuid.UUID `json:"stash_id"`
 	UserID  uuid.UUID `json:"user_id"`
 }
+
+type ListMyStashesResponse struct {
+	Maintainer []*StashResponse `json:"maintainer"`
+	Member     []*StashResponse `json:"member"`
+}

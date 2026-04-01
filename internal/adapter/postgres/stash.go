@@ -310,7 +310,7 @@ func (s *stashRepository) GetStashMaintainer(
 
 const (
 	getStashByNameSQL = `
-		select id, name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data, created_at
+		select id, name, description, maintainer_id, master_key_hash, master_key_salt, encrypted_data, created_at from stashes
 		where maintainer_id = $1 and name = $2;
 	`
 )
@@ -321,4 +321,62 @@ func (s *stashRepository) GetStashByName(
 ) (*stash.Stash, error) {
 	model, err := scanStashSQLRow(s.db.QueryRowContext(ctx, getStashByNameSQL, maintainerID, name))
 	return model.Domain(), err
+}
+
+const (
+	listMaintainerStashesSQL = `
+		SELECT id, name, description, maintainer_id,
+		master_key_hash, master_key_salt, encrypted_data, created_at
+		FROM stashes WHERE maintainer_id = $1;
+	`
+)
+
+func (s *stashRepository) ListMaintainerStashes(
+	ctx context.Context,
+	maintainerID uuid.UUID,
+) ([]*stash.Stash, error) {
+	rows, err := s.db.QueryContext(ctx, listMaintainerStashesSQL, maintainerID)
+	if err != nil {
+		return []*stash.Stash{}, err
+	}
+
+	stashes := make([]*stash.Stash, 0)
+	for rows.Next() {
+		stashSQLResp, err := scanStashSQLRow(rows)
+		if err != nil {
+			slog.Error("failed to scan stash row", "error", err.Error())
+			continue
+		}
+		stashes = append(stashes, stashSQLResp.Domain())
+	}
+	return stashes, nil
+}
+
+const (
+	listMemberStashesSQL = `
+		SELECT id, name, description, maintainer_id,
+		master_key_hash, master_key_salt, encrypted_data, created_at
+		FROM stashes WHERE id in (SELECT stash_id FROM stash_member WHERE user_id = $1);
+	`
+)
+
+func (s *stashRepository) ListMemberStashes(
+	ctx context.Context,
+	userID uuid.UUID,
+) ([]*stash.Stash, error) {
+	rows, err := s.db.QueryContext(ctx, listMemberStashesSQL, userID)
+	if err != nil {
+		return []*stash.Stash{}, err
+	}
+
+	stashes := make([]*stash.Stash, 0)
+	for rows.Next() {
+		stashSQLResp, err := scanStashSQLRow(rows)
+		if err != nil {
+			slog.Error("failed to scan stash row", "error", err.Error())
+			continue
+		}
+		stashes = append(stashes, stashSQLResp.Domain())
+	}
+	return stashes, nil
 }

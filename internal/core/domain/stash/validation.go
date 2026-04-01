@@ -3,6 +3,8 @@ package stash
 import (
 	"errors"
 	"regexp"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -23,6 +25,9 @@ func ValidateName(name string) error {
 	}
 	if len(name) > 255 {
 		return errors.New("Name is too long")
+	}
+	if _, err := uuid.Parse(name); err == nil {
+		return errors.New("Name must not be a valid UUID")
 	}
 	if !nameRegex.MatchString(name) {
 		return ErrInvalidName
