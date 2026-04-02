@@ -14,6 +14,8 @@ _default:
 _go_deps:
     go mod tidy
     go mod download
+    go install github.com/swaggo/swag/cmd/swag@latest
+    swag init -g ./cmd/stash-server/main.go
 
 # create new migration
 new-migration name:
@@ -34,10 +36,11 @@ docker-build tag="latest":
 # run with air hot-reload
 run-air out="./bin/stash-server":
     air --tmp_dir="./bin" \
-        --build.cmd "go build -o {{out}} ./cmd/stash-server/main.go" \
+        --build.cmd "just build {{out}}" \
         --build.bin "{{out}}" \
         --build.args_bin "--config=./server.yaml" \
         --build.exclude_dir "bin" \
+        --build.exclude_dir "docs" \
         --build.include_file "server.yaml" \
         --misc.clean_on_exit "true"
 

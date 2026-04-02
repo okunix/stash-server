@@ -8,8 +8,18 @@ import (
 	"github.com/okunix/stash-server/internal/core/ports"
 )
 
-// add get current user(whoami), update password and delete user handlers
-
+// Login godoc
+//
+//	@Summary		Login User
+//	@Description	Get User JWT Token for Login
+//	@Tags			Accounts
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.GetUserTokenRequest	true	"user credentials"
+//	@Success		200		{object}	dto.GetUserTokenResponse
+//	@Failure		400		{object}	jsonutil.Message
+//	@Failure		500		{object}	jsonutil.Message
+//	@Router			/auth/login [post]
 func Login(userService ports.UserService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -25,6 +35,21 @@ func Login(userService ports.UserService) apiFunc {
 	}
 }
 
+// CreateUser godoc
+//
+//	@Summary		Create User
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.CreateUserRequest	true	"user credentials"
+//	@Success		200		{object}	jsonutil.Message
+//	@Failure		400		{object}	jsonutil.Message
+//	@Failure		401		{object}	jsonutil.Message
+//	@Failure		403		{object}	jsonutil.Message
+//	@Failure		500		{object}	jsonutil.Message
+//	@Router			/users [post]
+//	@Security		BearerAuth
+//	@Description	Requires admin role.
 func CreateUser(userService ports.UserService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()

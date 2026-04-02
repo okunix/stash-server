@@ -13,6 +13,19 @@ import (
 // add update stash and delete stash handlers
 // also add some terraform helper handlers to check before apply
 
+// CreateStash create stash
+//
+//	@Summary	Create Stash
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		request	body		dto.CreateStashRequest	true	"stash to create"
+//	@Success	201		{object}	jsonutil.Message
+//	@Failure	400		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes [post]
+//	@Security	BearerAuth
 func CreateStash(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -27,6 +40,20 @@ func CreateStash(stashService ports.StashService) apiFunc {
 	}
 }
 
+// DeleteStash delete stash by id
+//
+//	@Summary	Delete Stash
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"Stash ID"
+//	@Success	200	{object}	jsonutil.Message
+//	@Failure	404	{object}	jsonutil.Message
+//	@Failure	401	{object}	jsonutil.Message
+//	@Failure	403	{object}	jsonutil.Message
+//	@Failure	500	{object}	jsonutil.Message
+//	@Router		/stashes/{id} [delete]
+//	@Security	BearerAuth
 func DeleteStash(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -45,6 +72,20 @@ func DeleteStash(stashService ports.StashService) apiFunc {
 	}
 }
 
+// GetStashByID get stash by id
+//
+//	@Summary	Get Stash By ID
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"Stash ID"
+//	@Success	200	{object}	dto.StashResponse
+//	@Failure	404	{object}	jsonutil.Message
+//	@Failure	401	{object}	jsonutil.Message
+//	@Failure	403	{object}	jsonutil.Message
+//	@Failure	500	{object}	jsonutil.Message
+//	@Router		/stashes/{id} [get]
+//	@Security	BearerAuth
 func GetStashByID(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -63,6 +104,17 @@ func GetStashByID(stashService ports.StashService) apiFunc {
 	}
 }
 
+// ListStashes list stashes that user maintains or is member of
+//
+//	@Summary	List User Stashes
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	dto.ListMyStashesResponse
+//	@Failure	401	{object}	jsonutil.Message
+//	@Failure	500	{object}	jsonutil.Message
+//	@Router		/stashes [get]
+//	@Security	BearerAuth
 func ListStashes(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -74,6 +126,19 @@ func ListStashes(stashService ports.StashService) apiFunc {
 	}
 }
 
+// LockStash lock certain stash to restrict any secrets access
+//
+//	@Summary	Lock Stash
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"Stash ID"
+//	@Success	200	{object}	jsonutil.Message
+//	@Failure	401	{object}	jsonutil.Message
+//	@Failure	403	{object}	jsonutil.Message
+//	@Failure	500	{object}	jsonutil.Message
+//	@Router		/stashes/{id}/lock [post]
+//	@Security	BearerAuth
 func LockStash(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -91,6 +156,20 @@ func LockStash(stashService ports.StashService) apiFunc {
 	}
 }
 
+// UnlockStash unlock certain stash to make secrets available for maintainer or members
+//
+//	@Summary	Unlock Stash
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string							true	"Stash ID"
+//	@Param		request	body		handlers.UnlockStash.request	true	"stash password"
+//	@Success	200		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id}/unlock [post]
+//	@Security	BearerAuth
 func UnlockStash(stashService ports.StashService) apiFunc {
 	type request struct {
 		Password string `json:"password"`
@@ -116,6 +195,19 @@ func UnlockStash(stashService ports.StashService) apiFunc {
 	}
 }
 
+// ListSecrets list secrets of an unlocked stash
+//
+//	@Summary	List Secrets
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"Stash ID"
+//	@Success	200	{object}	dto.SecretResponse
+//	@Failure	401	{object}	jsonutil.Message
+//	@Failure	403	{object}	jsonutil.Message
+//	@Failure	500	{object}	jsonutil.Message
+//	@Router		/stashes/{id}/secrets [get]
+//	@Security	BearerAuth
 func GetSecrets(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -134,6 +226,20 @@ func GetSecrets(stashService ports.StashService) apiFunc {
 	}
 }
 
+// GetSecretsEntry get certain secrets entry from an unlocked stash
+//
+//	@Summary	Get Secrets Entry
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	plain
+//	@Param		id		path		string	true	"Stash ID"
+//	@Param		name	path		string	true	"Secrets entry name"
+//	@Success	200		{object}	string
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id}/secrets/{name} [get]
+//	@Security	BearerAuth
 func GetSecretsEntry(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -159,6 +265,20 @@ func GetSecretsEntry(stashService ports.StashService) apiFunc {
 	}
 }
 
+// AddSecretsEntry add secrets entry
+//
+//	@Summary	Add Secrets Entry
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string			true	"Stash ID"
+//	@Param		request	body		dto.AddSecret	true	"secret name and value"
+//	@Success	201		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id}/secrets [put]
+//	@Security	BearerAuth
 func AddSecretsEntry(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -195,6 +315,20 @@ func AddSecretsEntry(stashService ports.StashService) apiFunc {
 	}
 }
 
+// RemoveSecretsEntry remove secrets entry
+//
+//	@Summary	Remove Secrets Entry
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string	true	"Stash ID"
+//	@Param		name	path		string	true	"Secrets entry name"
+//	@Success	200		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id}/secrets/{name} [delete]
+//	@Security	BearerAuth
 func RemoveSecretsEntry(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -214,6 +348,20 @@ func RemoveSecretsEntry(stashService ports.StashService) apiFunc {
 	}
 }
 
+// GetStashMembers get stash member
+//
+//	@Summary	Get stash members
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"Stash ID"
+//	@Success	200	{object}	dto.ListStashMemberResponse
+//	@Failure	404	{object}	jsonutil.Message
+//	@Failure	401	{object}	jsonutil.Message
+//	@Failure	403	{object}	jsonutil.Message
+//	@Failure	500	{object}	jsonutil.Message
+//	@Router		/stashes/{id}/members [get]
+//	@Security	BearerAuth
 func GetStashMembers(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -232,6 +380,21 @@ func GetStashMembers(stashService ports.StashService) apiFunc {
 	}
 }
 
+// AddStashMember add stash member
+//
+//	@Summary	Add stash member
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string						true	"Stash ID"
+//	@Param		request	body		dto.AddStashMemberRequest	true	"add stash member request"
+//	@Success	201		{object}	jsonutil.Message
+//	@Failure	404		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id}/members [post]
+//	@Security	BearerAuth
 func AddStashMember(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -257,6 +420,21 @@ func AddStashMember(stashService ports.StashService) apiFunc {
 	}
 }
 
+// RemoveStashMember remove stash member
+//
+//	@Summary	Remove stash member
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string	true	"Stash ID"
+//	@Param		user_id	path		string	true	"Stash member ID"
+//	@Success	200		{object}	jsonutil.Message
+//	@Failure	404		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id}/members/{user_id} [delete]
+//	@Security	BearerAuth
 func RemoveStashMember(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -285,6 +463,21 @@ func RemoveStashMember(stashService ports.StashService) apiFunc {
 	}
 }
 
+// UpdateStash update stash
+//
+//	@Summary	Update Stash
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string					true	"Stash ID"
+//	@Param		request	body		dto.UpdateStashRequest	true	"update stash request"
+//	@Success	200		{object}	jsonutil.Message
+//	@Failure	404		{object}	jsonutil.Message
+//	@Failure	401		{object}	jsonutil.Message
+//	@Failure	403		{object}	jsonutil.Message
+//	@Failure	500		{object}	jsonutil.Message
+//	@Router		/stashes/{id} [patch]
+//	@Security	BearerAuth
 func UpdateStash(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()
@@ -305,6 +498,21 @@ func UpdateStash(stashService ports.StashService) apiFunc {
 	}
 }
 
+// GetStashByName get stash by name
+//
+//	@Summary	Get Stash By Name
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		maintainer_id	path		string	true	"Stash maintainer id"
+//	@Param		name			path		string	true	"Stash name"
+//	@Success	200				{object}	dto.StashResponse
+//	@Failure	404				{object}	jsonutil.Message
+//	@Failure	401				{object}	jsonutil.Message
+//	@Failure	403				{object}	jsonutil.Message
+//	@Failure	500				{object}	jsonutil.Message
+//	@Router		/stashes/by-name/{maintainer_id}/{name} [get]
+//	@Security	BearerAuth
 func GetStashByName(stashService ports.StashService) apiFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		ctx := r.Context()

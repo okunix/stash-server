@@ -10,6 +10,7 @@ import (
 	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
 	"github.com/okunix/stash-server/internal/adapter/web/middleware"
 	"github.com/okunix/stash-server/internal/core/ports"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type RouterOptions struct {
@@ -51,6 +52,8 @@ func Router(opts RouterOptions) http.Handler {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("healthy"))
 	})
+
+	router.Handle("GET /swagger/*", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 
 	return router
 }

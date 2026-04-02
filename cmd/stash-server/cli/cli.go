@@ -3,9 +3,9 @@ package cli
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"github.com/okunix/stash-server/cmd/stash-server/app"
 	"github.com/okunix/stash-server/version"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{

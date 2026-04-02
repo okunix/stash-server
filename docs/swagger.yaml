@@ -1,0 +1,960 @@
+basePath: /api/v1
+definitions:
+  dto.AddSecret:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    type: object
+  dto.AddStashMemberRequest:
+    properties:
+      stash_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.ChangePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.CreateStashRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.GetUserTokenRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.GetUserTokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.ListMyStashesResponse:
+    properties:
+      maintainer:
+        items:
+          $ref: '#/definitions/dto.StashResponse'
+        type: array
+      member:
+        items:
+          $ref: '#/definitions/dto.StashResponse'
+        type: array
+    type: object
+  dto.ListStashMemberResponse:
+    properties:
+      maintainer:
+        $ref: '#/definitions/dto.StashMaintainerResponse'
+      members:
+        items:
+          $ref: '#/definitions/dto.StashMemberResponse'
+        type: array
+    type: object
+  dto.ListUsersResponse:
+    properties:
+      page:
+        $ref: '#/definitions/dto.Page'
+      result:
+        items:
+          $ref: '#/definitions/dto.UserResponse'
+        type: array
+    type: object
+  dto.Page:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.SecretResponse:
+    properties:
+      keys:
+        description: Data       map[string]string `json:"data"`
+        items:
+          type: string
+        type: array
+      unlocked_at:
+        type: string
+    type: object
+  dto.StashMaintainerResponse:
+    properties:
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.StashMemberResponse:
+    properties:
+      since:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.StashResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      locked:
+        type: boolean
+      maintainer_id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UpdateStashRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      created_at:
+        type: string
+      expired_at:
+        type: string
+      id:
+        type: string
+      locked:
+        type: boolean
+      username:
+        type: string
+    type: object
+  handlers.UnlockStash.request:
+    properties:
+      password:
+        type: string
+    type: object
+  jsonutil.Message:
+    properties:
+      code:
+        type: integer
+      detail: {}
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Stash Password Manager API Server
+  title: Stash API Server
+  version: "0.0"
+paths:
+  /auth/change-password:
+    patch:
+      consumes:
+      - application/json
+      description: change password for current user or (if admin) for specified user
+      parameters:
+      - description: change password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Change Password
+      tags:
+      - Accounts
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Get User JWT Token for Login
+      parameters:
+      - description: user credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GetUserTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetUserTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      summary: Login User
+      tags:
+      - Accounts
+  /auth/whoami:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get current user information
+      tags:
+      - Accounts
+  /stashes:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListMyStashesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: List User Stashes
+      tags:
+      - Stashes
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: stash to create
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStashRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Create Stash
+      tags:
+      - Stashes
+  /stashes/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Delete Stash
+      tags:
+      - Stashes
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StashResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get Stash By ID
+      tags:
+      - Stashes
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: update stash request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStashRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Update Stash
+      tags:
+      - Stashes
+  /stashes/{id}/lock:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Lock Stash
+      tags:
+      - Stashes
+  /stashes/{id}/members:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListStashMemberResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get stash members
+      tags:
+      - Stashes
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: add stash member request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddStashMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Add stash member
+      tags:
+      - Stashes
+  /stashes/{id}/members/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Stash member ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Remove stash member
+      tags:
+      - Stashes
+  /stashes/{id}/secrets:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SecretResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: List Secrets
+      tags:
+      - Stashes
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: secret name and value
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddSecret'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Add Secrets Entry
+      tags:
+      - Stashes
+  /stashes/{id}/secrets/{name}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Secrets entry name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Remove Secrets Entry
+      tags:
+      - Stashes
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Secrets entry name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get Secrets Entry
+      tags:
+      - Stashes
+  /stashes/{id}/unlock:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: stash password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UnlockStash.request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Unlock Stash
+      tags:
+      - Stashes
+  /stashes/by-name/{maintainer_id}/{name}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash maintainer id
+        in: path
+        name: maintainer_id
+        required: true
+        type: string
+      - description: Stash name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StashResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get Stash By Name
+      tags:
+      - Stashes
+  /users:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: limit
+        in: query
+        minimum: 0
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ListUsersResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: List users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Requires admin role.
+      parameters:
+      - description: user credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Create User
+      tags:
+      - Users
+  /users/{username_or_id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns user by id(uuid) or (if request param is not uuid) by username
+      parameters:
+      - description: Username or ID
+        in: path
+        name: username_or_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get username by username or id
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    description: 'Bearer token. Format: "Bearer <token>"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
