@@ -348,7 +348,7 @@ func (s *stashService) GetSecretsEntry(
 	}
 	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
 	if err != nil {
-		return "", ports.NotFoundError(err)
+		return "", ports.ForbiddenError(err)
 	}
 	entry, ok := sec.GetEntry(entryKey)
 	if !ok {
@@ -460,7 +460,7 @@ func (s *stashService) Lock(ctx context.Context, stashID uuid.UUID) error {
 
 	sec, err := s.secretRepo.GetSecretByStashID(ctx, stashID)
 	if err != nil {
-		return ports.NotFoundError(err)
+		return ports.BadRequestError(err)
 	}
 
 	cipher := crypto.AESGCM()

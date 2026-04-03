@@ -25,7 +25,7 @@ func (s *secretRepository) GetSecretByStashID(
 ) (*secret.Secret, error) {
 	st, ok := s.cache.Get(stashID.String())
 	if !ok {
-		return nil, errors.New("secret not found")
+		return nil, errors.New("stash is locked")
 	}
 	secretData := st.(*secret.Secret)
 	return secretData, nil
