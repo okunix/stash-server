@@ -597,6 +597,36 @@ paths:
       summary: Remove stash member
       tags:
       - Stashes
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Stash ID
+        in: path
+        name: stash_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.StashMemberResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/jsonutil.Message'
+      security:
+      - BearerAuth: []
+      summary: Get stash member
+      tags:
+      - Stashes
   /stashes/{id}/secrets:
     get:
       consumes:

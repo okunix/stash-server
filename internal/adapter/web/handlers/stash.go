@@ -529,3 +529,39 @@ func GetStashByName(stashService ports.StashService) apiFunc {
 		return jsonutil.Write(w, 200, resp)
 	}
 }
+
+// GetStashMember get stash member
+//
+//	@Summary	Get stash member
+//	@Tags		Stashes
+//	@Accept		json
+//	@Produce	json
+//	@Param		stash_id	path		string	true	"Stash ID"
+//	@Param		user_id		path		string	true	"User ID"
+//	@Success	200			{object}	dto.StashMemberResponse
+//	@Failure	404			{object}	jsonutil.Message
+//	@Router		/stashes/{id}/members/{user_id} [get]
+//	@Security	BearerAuth
+func GetStashMember(stashService ports.StashService) apiFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+
+		stashID := r.PathValue("stash_id")
+		stashUUID, err := uuid.Parse(stashID)
+		if err != nil {
+			return ports.NotFoundError(errStashNotFound)
+		}
+
+		userID := r.PathValue("user_id")
+		userUUID, err := uuid.Parse(userID)
+		if err != nil {
+			return ports.NotFoundError(errStashNotFound)
+		}
+
+		resp, err := stashService.GetStashMember(ctx, stashUUID, userUUID)
+		if err != nil {
+			return err
+		}
+		return jsonutil.Write(w, http.StatusOK, resp)
+	}
+}

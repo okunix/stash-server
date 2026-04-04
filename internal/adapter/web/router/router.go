@@ -101,6 +101,9 @@ func newV1StashRouter(opts RouterOptions) http.Handler {
 	router.Handle("DELETE /{stash_id}/members/{user_id}",
 		handlers.RemoveStashMember(opts.StashService).Unwrap())
 
+	router.Handle("GET /{stash_id}/members/{user_id}",
+		handlers.GetStashMember(opts.StashService).Unwrap())
+
 	router.Handle("PATCH /{stash_id}",
 		handlers.UpdateStash(opts.StashService).Unwrap())
 

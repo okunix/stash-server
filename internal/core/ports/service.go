@@ -35,6 +35,7 @@ type StashService interface {
 	Lock(ctx context.Context, stashID uuid.UUID) error
 
 	ListMyStashes(ctx context.Context) (*dto.ListMyStashesResponse, error)
+	GetStashMember(ctx context.Context, stashID, userID uuid.UUID) (*dto.StashMemberResponse, error)
 }
 
 type UserService interface {

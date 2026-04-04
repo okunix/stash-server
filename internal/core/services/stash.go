@@ -32,6 +32,25 @@ func NewStashService(params StashServiceParams) ports.StashService {
 	}
 }
 
+func (s *stashService) isUserStashMaintainer(ctx context.Context, stashID, userID uuid.UUID) error {
+	ok, err := s.stashRepo.IsStashMaintainer(ctx, userID, stashID)
+	if err != nil {
+		return ports.InternalError(err)
+	}
+	if !ok {
+		return ports.ForbiddenError(errors.New("user is not a stash maintainer"))
+	}
+	return nil
+}
+
+func (s *stashService) isUserStashMember(ctx context.Context, stashID, userID uuid.UUID) error {
+	ok, err := s.stashRepo.IsStashMember(ctx, userID, stashID)
+	if err != nil || !ok {
+		return ports.ForbiddenError(errors.New("user is not a stash member"))
+	}
+	return nil
+}
+
 func (s *stashService) isStashMaintainer(
 	ctx context.Context,
 	stashID uuid.UUID,
@@ -40,16 +59,8 @@ func (s *stashService) isStashMaintainer(
 	if !ok {
 		return currentUser, ports.UnauthorizedError(nil)
 	}
-
-	ok, err := s.stashRepo.IsStashMaintainer(ctx, currentUser.UserID, stashID)
-	if err != nil {
-		return currentUser, ports.InternalError(err)
-	}
-	if !ok {
-		return currentUser, ports.ForbiddenError(errors.New("you are not stash maintainer"))
-	}
-
-	return currentUser, nil
+	err := s.isUserStashMaintainer(ctx, stashID, currentUser.UserID)
+	return currentUser, err
 }
 
 func (s *stashService) isStashMemberOrMaintainer(
@@ -553,5 +564,31 @@ func (s *stashService) ListMyStashes(ctx context.Context) (*dto.ListMyStashesRes
 	return &dto.ListMyStashesResponse{
 		Maintainer: maintainerStashesResp,
 		Member:     memberStashesResp,
+	}, nil
+}
+
+func (s *stashService) IsUserStashMember(ctx context.Context, stashID, userID uuid.UUID) error {
+	_, err := s.isStashMaintainer(ctx, stashID)
+	if err != nil {
+		return err
+	}
+	return s.isUserStashMember(ctx, stashID, userID)
+}
+
+func (s *stashService) GetStashMember(
+	ctx context.Context,
+	stashID, userID uuid.UUID,
+) (*dto.StashMemberResponse, error) {
+	if _, err := s.isStashMemberOrMaintainer(ctx, stashID); err != nil {
+		return nil, err
+	}
+	member, err := s.stashRepo.GetStashMember(ctx, stashID, userID)
+	if err != nil {
+		return nil, ports.NotFoundError(errors.New("user is not a member of the stash"))
+	}
+	return &dto.StashMemberResponse{
+		UserID:   member.UserID,
+		Username: member.Username,
+		Since:    member.Since,
 	}, nil
 }

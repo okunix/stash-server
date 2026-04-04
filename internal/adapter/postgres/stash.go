@@ -380,3 +380,19 @@ func (s *stashRepository) ListMemberStashes(
 	}
 	return stashes, nil
 }
+
+const (
+	getStashMemberSQL = `
+		SELECT u.id, u.username, m.created_at FROM stash_member m INNER JOIN users u ON u.id = m.user_id WHERE m.stash_id = $1 AND m.user_id = $2;
+	`
+)
+
+func (s *stashRepository) GetStashMember(
+	ctx context.Context,
+	stashID, userID uuid.UUID,
+) (*stash.StashMember, error) {
+	var stashMember stash.StashMember
+	err := s.db.QueryRowContext(ctx, getStashMemberSQL, stashID, userID).
+		Scan(&stashMember.UserID, &stashMember.Username, &stashMember.Since)
+	return &stashMember, err
+}

@@ -690,6 +690,53 @@ const docTemplate = `{
             }
         },
         "/stashes/{id}/members/{user_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Stashes"
+                ],
+                "summary": "Get stash member",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stash ID",
+                        "name": "stash_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.StashMemberResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/jsonutil.Message"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "security": [
                     {
