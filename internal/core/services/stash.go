@@ -146,9 +146,7 @@ func (s *stashService) AddStashMember(
 	}
 
 	params := stash.AddMemberParams{UserID: req.UserID, StashID: req.StashID}
-	if err := s.stashRepo.AddMember(ctx, params); err != nil {
-		return ports.NotFoundError(nil)
-	}
+	s.stashRepo.AddMember(ctx, params)
 	return nil
 }
 
