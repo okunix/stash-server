@@ -1,0 +1,9 @@
+addr: "0.0.0.0:7878" # Address to listen on
+logFile: "" # Log File (empty to stdout)
+postgres: # PostgreSQL connection configuration
+  host: stash-postgres # PostgreSQL host
+  port: "5432" # PostgreSQL port
+  database: stash_db # PostgreSQL db name
+  user: postgres # PostgreSQL user
+  password: postgres # PostgreSQL password
+  sslMode: disable # PostgreSQL SSL Mode (https://www.postgresql.org/docs/18/libpq-ssl.html)
