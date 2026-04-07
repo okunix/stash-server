@@ -1,13 +1,15 @@
-name: stash-server
+name: stash-server-dev
 
 services:
   stash-air:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.air
     container_name: stash-server
     ports:
       - 7878:7878/tcp
+    volumes:
+      - ./:/app
     depends_on:
       postgres:
         condition: service_healthy

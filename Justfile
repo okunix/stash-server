@@ -45,9 +45,9 @@ run-air out="./bin/stash-server":
         --misc.clean_on_exit "true"
 
 # run docker compose with build and force-recreate options
-compose:
-    docker compose up --build --force-recreate
+compose file="compose.air.yml":
+    docker compose -f {{file}} up --build --force-recreate
 
 # run docker compose down
-compose-down:
-    docker compose down
+compose-down file="compose.air.yml":
+    docker compose -f {{file}} down
