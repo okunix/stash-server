@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"io"
 	"os"
 
@@ -49,7 +50,10 @@ func ReadFromFile(path string) (Config, error) {
 func Read(r io.Reader) (Config, error) {
 	conf = DefaultConfig()
 	err := yaml.NewDecoder(r).Decode(&conf)
-	return conf, err
+	if err != nil && !errors.Is(err, io.EOF) {
+		return conf, err
+	}
+	return conf, nil
 }
 
 var conf Config
