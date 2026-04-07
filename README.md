@@ -1,6 +1,6 @@
 # stash-server
 
-Самостоятельно размещаемый менеджер секретов с RESTful HTTP API и хранилищем на базе PostgreSQL.
+Менеджер секретов с HTTP API и хранилищем на базе PostgreSQL.
 
 ## Обзор
 
