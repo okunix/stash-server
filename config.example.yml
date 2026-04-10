@@ -7,3 +7,4 @@ postgres: # PostgreSQL connection configuration
   user: postgres # PostgreSQL user
   password: postgres # PostgreSQL password
   sslMode: disable # PostgreSQL SSL Mode (https://www.postgresql.org/docs/18/libpq-ssl.html)
+jwtTTL: 5 # Json Web Token Time To Live in minutes (0 for infinite)

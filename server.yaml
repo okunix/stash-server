@@ -5,3 +5,4 @@ postgres:
   user: postgres
   password: postgres
   sslMode: disable
+jwtTTL: 1

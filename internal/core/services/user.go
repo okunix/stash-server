@@ -16,15 +16,18 @@ import (
 
 type userService struct {
 	userRepo ports.UserRepository
+	jwtTTL   int
 }
 
 type UserServiceParams struct {
 	UserRepository ports.UserRepository
+	JwtTTL         int
 }
 
 func NewUserService(params UserServiceParams) ports.UserService {
 	return &userService{
 		userRepo: params.UserRepository,
+		jwtTTL:   params.JwtTTL,
 	}
 }
 
@@ -44,9 +47,6 @@ func (u *userService) createUserWithRole(
 	req dto.CreateUserRequest,
 	role string,
 ) error {
-	if err := u.checkAdminUser(ctx); err != nil {
-		return err
-	}
 
 	if problems, ok := req.Validate(); !ok {
 		return ports.NewValidationError(problems)
@@ -70,6 +70,9 @@ func (u *userService) createUserWithRole(
 }
 
 func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserRequest) error {
+	if err := u.checkAdminUser(ctx); err != nil {
+		return err
+	}
 	return u.createUserWithRole(ctx, req, user.RoleUser)
 }
 
@@ -103,8 +106,23 @@ func (u *userService) GetUserToken(
 	}
 
 	slog.Info("generating jwt", "user_id", user.ID, "username", user.Username)
-	expiresAt := time.Now().Add(5 * time.Minute)
-	token, err := auth.JWT(user.ID, user.Username, user.Role, auth.WithExpirationTime(expiresAt))
+
+	var token string
+	if u.jwtTTL > 0 {
+		expiresAt := time.Now().Add(time.Duration(u.jwtTTL) * time.Minute)
+		token, err = auth.JWT(
+			user.ID,
+			user.Username,
+			user.Role,
+			auth.WithExpirationTime(expiresAt),
+		)
+	} else {
+		token, err = auth.JWT(
+			user.ID,
+			user.Username,
+			user.Role,
+		)
+	}
 	if err != nil {
 		return "", ports.InternalError(err)
 	}

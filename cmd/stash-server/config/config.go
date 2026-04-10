@@ -21,6 +21,7 @@ type Config struct {
 	Addr           string         `yaml:"addr"`
 	LogFile        string         `yaml:"logFile"`
 	PostgresConfig PostgresConfig `yaml:"postgres"`
+	JwtTTL         int            `yaml:"jwtTTL"`
 }
 
 func DefaultConfig() Config {
@@ -35,6 +36,7 @@ func DefaultConfig() Config {
 			Password: "postgres",
 			SSLMode:  "disable",
 		},
+		JwtTTL: 5,
 	}
 }
 

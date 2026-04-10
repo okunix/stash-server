@@ -62,6 +62,7 @@ func Run(configFilePath string) {
 	userService := services.NewUserService(
 		services.UserServiceParams{
 			UserRepository: userRepository,
+			JwtTTL:         conf.JwtTTL,
 		},
 	)
 
