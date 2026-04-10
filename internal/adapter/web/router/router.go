@@ -2,10 +2,12 @@ package router
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
 	"github.com/okunix/stash-server/internal/adapter/web/handlers"
 	"github.com/okunix/stash-server/internal/adapter/web/jsonutil"
 	"github.com/okunix/stash-server/internal/adapter/web/middleware"
@@ -23,6 +25,7 @@ func Router(opts RouterOptions) http.Handler {
 
 	router.Use(
 		middleware.Recovery,
+		httprate.LimitByIP(100, time.Minute),
 		chiMiddleware.StripSlashes,
 		chiMiddleware.CleanPath,
 		middleware.AssignUser,
