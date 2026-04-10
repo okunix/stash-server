@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/okunix/stash-server/internal/core/auth"
@@ -102,7 +103,8 @@ func (u *userService) GetUserToken(
 	}
 
 	slog.Info("generating jwt", "user_id", user.ID, "username", user.Username)
-	token, err := auth.JWT(user.ID, user.Username, user.Role)
+	expiresAt := time.Now().Add(5 * time.Minute)
+	token, err := auth.JWT(user.ID, user.Username, user.Role, auth.WithExpirationTime(expiresAt))
 	if err != nil {
 		return "", ports.InternalError(err)
 	}
