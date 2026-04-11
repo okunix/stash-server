@@ -23,8 +23,19 @@ import (
 func Run(configFilePath string) {
 	ctx := context.Background()
 
-	// preventing all current and future pages from being swapped out.
-	unix.Mlockall(syscall.MCL_CURRENT | syscall.MCL_FUTURE)
+	// preventing all current and future pages from being swapped out. (man 2 mlock)
+	err := unix.Mlockall(syscall.MCL_CURRENT | syscall.MCL_FUTURE)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to perform mlockall system call: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	// disabling core dump file (man 2 getrlimit)
+	err = unix.Setrlimit(unix.RLIMIT_CORE, &unix.Rlimit{Cur: 0, Max: 0})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to perform setrlimit CORE system call: %s\n", err.Error())
+		os.Exit(1)
+	}
 
 	// reading config file
 	conf, err := config.ReadFromFile(configFilePath)

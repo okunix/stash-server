@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: stash-server
+    cap_add:
+      - IPC_LOCK
     ports:
       - 7878:7878/tcp
     depends_on:
