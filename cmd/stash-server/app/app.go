@@ -17,10 +17,15 @@ import (
 	"github.com/okunix/stash-server/internal/adapter/web"
 	"github.com/okunix/stash-server/internal/core/services"
 	"github.com/okunix/stash-server/migrations"
+	"golang.org/x/sys/unix"
 )
 
 func Run(configFilePath string) {
 	ctx := context.Background()
+
+	// preventing all current and future pages from being swapped out.
+	unix.Mlockall(syscall.MCL_CURRENT | syscall.MCL_FUTURE)
+
 	// reading config file
 	conf, err := config.ReadFromFile(configFilePath)
 	if err != nil {
