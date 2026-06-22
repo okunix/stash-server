@@ -60,6 +60,6 @@ func CreateUser(userService ports.UserService) apiFunc {
 		if err := userService.CreateUser(ctx, req); err != nil {
 			return err
 		}
-		return jsonutil.SendMessage(w, jsonutil.Ok)
+		return jsonutil.SendMessage(w, jsonutil.Created)
 	}
 }
